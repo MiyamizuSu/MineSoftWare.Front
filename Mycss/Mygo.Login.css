@@ -1,0 +1,59 @@
+#container{
+    background-image: url("../src/components/resource/Mygo1.jpg");
+}
+body{
+    margin: 0;
+}
+.logoContainerH{
+    display: inline-grid;
+    font-size: small;
+}
+.loginContent{
+    margin-top: 30px;
+}
+.mLogo {
+    width: 150px;
+    height: 60px;
+}
+.mLogoG{
+    width: 300px;
+    height: 120px;
+}
+.loginContainer{
+    display: inline-grid;
+    width: 30%;
+    margin-left: 35%;
+    margin-top: 5%;
+}
+.loginContent{
+    display: inline-grid;
+}
+.buttonGroup{
+    display: inline-grid;
+}
+#loginBtn{
+    margin-left:  25%;
+    margin-right: 25%;
+    margin-top: 10px;
+}
+#signupBtn{
+    margin-left:  25%;
+    margin-right: 25%;
+}
+.inputGroup{
+    display: inline-grid;
+    margin-top: 10px;
+}
+.messageInput{
+    margin-left:  18%;
+
+}
+.checkBoxP{
+    margin-left: 19%;
+    margin-top: 20px;
+}
+.CopyrightContainer{
+    font-size: small;
+    margin-left: 43%;
+    color: white;
+}

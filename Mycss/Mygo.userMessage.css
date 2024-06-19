@@ -1,0 +1,19 @@
+.CopyrightContainer{
+    font-size: small;
+    margin-left: 43%;
+    color: white;
+}
+body{
+     margin: 0;
+ }
+.messageContainer{
+    text-align: center;
+}
+.messageContainerE{
+    margin-top: 10px;
+    text-align: center;
+}
+.messageContainerB{
+    margin-top: 80px;
+    text-align: center;
+}
