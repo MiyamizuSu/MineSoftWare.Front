@@ -61,11 +61,12 @@ export default {
   methods: {
     handleCommand(command:string|number|object){
       if(command==='l')
-      router.push('/login')
+        router.push("/login")
     }
   },
   // `mounted` 是生命周期钩子，之后我们会讲到
   mounted() {
+
   }
 }
 

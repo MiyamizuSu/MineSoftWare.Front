@@ -1,12 +1,24 @@
 <script lang="ts">
-import {defineComponent} from 'vue'
+import {defineComponent, ref, watch} from 'vue'
 
 export default defineComponent({
-  props:['type','data'],
-  name: "messageItem"
-
-}
-)
+  props: {
+    type: String,
+    data: {
+      type: String,
+    }
+  },
+  name: "messageItem",
+  setup(props) {
+    const viewData = ref(props.data);
+    watch(() => props.data, (newData) => {
+      viewData.value = newData;
+    });
+    return {
+      viewData
+    };
+  }
+});
 </script>
 
 <template>
@@ -19,7 +31,7 @@ export default defineComponent({
       <el-icon v-else-if="type==='所属角色'"><View /></el-icon>
       <el-icon v-else-if="type==='创建日期'"><Calendar /></el-icon>
       {{type}} </el-divider>
-    <el-input v-if="type==='用户昵称'||type==='手机号码'||type==='用户邮箱'" v-model="data" placeholder="输入新信息" > </el-input>
+    <el-input v-if="type==='用户昵称'||type==='手机号码'||type==='用户邮箱'" placeholder="输入新信息"  v-model="viewData" @input="$emit('someEvent',viewData,type)"> </el-input>
     <el-text v-else>{{data}}</el-text>
   </div>
 

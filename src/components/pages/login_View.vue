@@ -41,12 +41,14 @@
                 </el-checkbox>
               </div>
               <div v-else-if="isChooseMode==='3'" key="register" class="inputGroup" style="margin-bottom: 50px">
+                <el-input v-model="userMessageR.companyName" class="messageInput" placeholder="请输入企业名称"
+                          size="large" style="width: 400px;"></el-input>
                 <el-input v-model="userMessageR.userName" class="messageInput"
-                          placeholder="请输入账号昵称" size="large" style="width: 400px;"></el-input>
+                          placeholder="请输入账号昵称" size="large" style="margin-top: 20px; width: 400px;"></el-input>
                 <el-input v-model="userMessageR.userPassword" class="messageInput" placeholder="请输入密码"
                           show-password
                           size="large" style="margin-top: 20px;width: 400px;"></el-input>
-                <el-input v-model="userMessageR.companyName" class="messageInput" placeholder="请输入企业名称"
+                <el-input v-model="userMessageR.userRealName" class="messageInput" placeholder="请输入真实姓名"
                           size="large" style="margin-top: 20px;width: 400px;"></el-input>
                 <el-input v-model="userMessageR.companyPhoneNumber" class="messageInput" placeholder="请输入手机号"
                           size="large" style="margin-top: 20px;width: 400px;"></el-input>
@@ -85,6 +87,7 @@
 import axios from "axios";
 import {ref} from "vue";
 import {ElMessage} from "element-plus";
+import router from "@/router";
 
 var useMode = {
   normal: "1",
@@ -112,6 +115,7 @@ export default {
       },
       userMessageR: {
         userName: "",
+        userRealName:"",
         userPassword: "",
         companyName: "",
         companyPhoneNumber: "",
@@ -132,10 +136,14 @@ export default {
           if (res.status == 200) {
             if (res.data.statusCode === "200") {
               ElMessage({
-                message: '登录成功',
+                message: '登录成功,将在3秒后跳转',
                 grouping: true,
                 type: 'success',
               })
+              this.$emit('successLogin')
+              setTimeout(()=>{
+                router.push("/mainView")
+              },3000)
             } else if (res.data.statusCode === "302") {
               ElMessage({
                 message: '账号/密码错误',
@@ -210,6 +218,7 @@ export default {
   },
   // `mounted` 是生命周期钩子，之后我们会讲到
   mounted() {
+
   }
 }
 </script>
