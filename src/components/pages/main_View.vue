@@ -161,6 +161,9 @@ import {ref} from "vue";
 import {loadingData, type USERDATA} from "@/utilTs/util";
 import Axios from "axios";
 import {ElMessage} from "element-plus";
+import axios from "axios";
+
+axios.defaults.withCredentials =true;
 
 export default {
   // 组合式API部分，存放非数据变量
@@ -176,13 +179,15 @@ export default {
   data() {
     const defaultData : USERDATA={
       userName: "",
-      belongCompany: "",
+      userRealName: "",
       userPhoneNumber: "",
       userEmail: "",
-      userRealName: "",
-      belongDept:"",
-      startTime:"",
-      admin: true
+      imgUrl: "",
+      userType: -1,
+      belongCompany: "",
+      belongDept: "",
+      startTime: "",
+
     }
     return {
       userMessage:defaultData,
@@ -197,6 +202,15 @@ export default {
       }
       else if(command==='e'){
         this.passwordC=true;
+      }
+      else if (command === 'm') {
+        axios.get("http://localhost:8080/user/logout").then(
+            res => {
+              if (res.status === 200) {
+                router.push("/basicView")
+              }
+            }
+        )
       }
     },
     toLogin() {
@@ -223,11 +237,14 @@ export default {
                 type: 'success',
               })
             }
+            else if (res.data.statusCode === "304") {
+              ElMessage({message: "不能将用户密码修改为空！", type: "warning"});
+            }
             else{
               ElMessage({
                 message: '发生了未知的错误',
                 grouping: true,
-                type: 'success',
+                type: 'error',
               })
             }
         }

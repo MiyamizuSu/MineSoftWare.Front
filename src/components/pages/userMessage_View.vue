@@ -31,8 +31,9 @@
                 <message-item type="手机号码"  @someEvent="changeData"  v-model:data="userData.userPhoneNumber" ></message-item>
                 <message-item type="用户邮箱"  @someEvent="changeData"  v-model:data="userData.userEmail" ></message-item>
                 <message-item type="所属部门" :data="userData.belongDept" ></message-item>
-                <message-item type="所属角色" data="企业管理员" v-if="userData.admin" ></message-item>
-                <message-item type="所属角色" data="一般用户" v-else ></message-item>
+                <message-item type="所属角色" data="企业管理员" v-if="userData.userType==1" ></message-item>
+                <message-item type="所属角色" data="一般用户" v-else-if="userData.userType==0" ></message-item>
+                <message-item type="所属角色" data="超级管理员" v-else-if="userData.userType==2" ></message-item>
                 <message-item type="创建日期" :data="userData.startTime" ></message-item>
               </div>
               <template #footer>
@@ -65,6 +66,9 @@ import { ArrowLeft } from '@element-plus/icons-vue'
 import {loadingData} from "@/utilTs/util";
 import type {USERDATA} from "@/utilTs/util";
 import Axios from "axios"
+import {ElMessage} from "element-plus";
+
+Axios.defaults.withCredentials =true;
 
 export default {
   components: {MessageItem},
@@ -77,15 +81,17 @@ export default {
   },
   // 选项式API部分，存放实体数据变量
   data() {
+    //既然前端把企业用户和超级管理员视作同一类型，后端就也应该用同一个类
     const defaultData : USERDATA={
       userName: "",
-      belongCompany: "",
+      userRealName: "",
       userPhoneNumber: "",
       userEmail: "",
-      userRealName: "",
-      admin: true,
-      startTime:"",
-      belongDept:""
+      imgUrl: "",
+      userType: -1,
+      belongCompany: "",
+      belongDept: "",
+      startTime: "",
     }
     return {
       userData :defaultData,
@@ -96,21 +102,36 @@ export default {
       router.push("/mainView")
     },
     uploadMessage(){
-      console.log("1111")
+      console.log("1111");
+      console.log(this.userData.userName);
       Axios.post("http://localhost:8080/user/updateMessage",this.userData,{
         withCredentials:true
       }).then((res) => {
         console.log(res)
         if (res.status === 200) {
-          if (res.data.statusCode === 200) {
-
+          if (res.data.statusCode === "200") {
+            //显示更新成功
+            ElMessage({message: "信息更新成功！", type: "success"});
+          }
+          else if (res.data.statusCode === "301") {
+            ElMessage({message: "修改后的用户昵称与其他用户昵称重复！", type: "warning"});
+          }
+          else if (res.data.statusCode === "303") {
+            ElMessage({message: "不能将用户昵称修改为空！", type: "warning"});
+          }
+          else {
+            ElMessage({message: "发生了未知的错误", type: "error"});
           }
         }
       })
     },
-    changeData( e : string,k:string){
-      if(k==='用户名称'){
-        this.userData.userName=k;
+    changeData( e : string, k:string){
+      if(k==='用户昵称'){
+        //这儿应该先判断一下是否为空才行吧
+        if (e.length < 0) {
+          return;
+        }
+        this.userData.userName=e;
       }
       else if(k==='手机号码')
       {

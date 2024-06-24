@@ -41,8 +41,9 @@
 import router from "@/router";
 import { UserFilled } from '@element-plus/icons-vue'
 import {useRouter} from "vue-router";
+import axios from "axios";
 
-
+axios.defaults.withCredentials =true;
 
 export default {
   // 组合式API部分，存放非数据变量

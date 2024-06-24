@@ -32,7 +32,7 @@
               <div v-if="isChooseMode==='2'" key="login" class="inputGroup" style="margin-bottom: 50px">
                 <el-input v-model="userMessageL.userCompany" class="messageInput" placeholder="请输入企业名称"
                           size="large" style="width: 400px;"></el-input>
-                <el-input v-model="userMessageL.userName" class="messageInput" placeholder="请输入账号" size="large"
+                <el-input v-model="userMessageL.userName" class="messageInput" placeholder="请输入用户昵称" size="large"
                           style="margin-top: 20px; width: 400px;"></el-input>
                 <el-input v-model="userMessageL.userPassword" class="messageInput" placeholder="请输入密码"
                           show-password size="large" style="margin-top: 20px; width: 400px;"></el-input>
@@ -88,6 +88,8 @@ import axios from "axios";
 import {ref} from "vue";
 import {ElMessage} from "element-plus";
 import router from "@/router";
+
+axios.defaults.withCredentials =true;
 
 var useMode = {
   normal: "1",
@@ -167,13 +169,13 @@ export default {
           withCredentials: true
         }).then(res => {
           if (res.status == 200) {
-            if (res.data.statusCode === "200") {
+            if (res.data.statusCode == "200") {
               ElMessage({
                 message: '注册成功',
                 grouping: true,
                 type: 'success',
               })
-            } else if (res.data.statusCode === "301") {
+            } else if (res.data.statusCode == "301") {
               ElMessage({
                 message: '注册名称重复',
                 grouping: true,

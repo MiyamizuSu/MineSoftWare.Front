@@ -12,6 +12,7 @@ export default defineComponent({
   setup(props) {
     const viewData = ref(props.data);
     watch(() => props.data, (newData) => {
+      // console.log(newData);
       viewData.value = newData;
     });
     return {

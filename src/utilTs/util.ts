@@ -2,20 +2,22 @@ import Axios from 'axios';
 
 export interface USERDATA{
     "userName": string,
-    "belongCompany": string,
+    "userRealName": string,
     "userPhoneNumber": string,
     "userEmail": string,
-    "userRealName": string,
-    "admin": boolean
-    "belongDept":string
-    "startTime":string
+    "imgUrl": string,
+    "userType": number,
+    "belongCompany": string,
+    "belongDept": string,
+    "startTime": string,
 }
 
 export const loadingData = (): Promise<USERDATA> => Axios.post("http://localhost:8080/user/loading", {}, {
     withCredentials: true
 }).then((res) => {
     if (res.status === 200) {
-        console.log(res.data.userData)
+        console.log("从后端加载的当前session中的user：");
+        console.log(res.data.userData);
         return res.data.userData as USERDATA;
     } else {
         console.log("Error");
