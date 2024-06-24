@@ -13,9 +13,13 @@
         <div style="display: inline-flex">
           <div style="margin-right: -10px;z-index: 100;margin-left: 25%;margin-top:5%">
             <el-card class="box-card" style="height: 700px;width: 700px">
-              <img src="../resource/userAvater.png" style="object-fit: cover;width: 100%;height: 100%"/>
-              <el-input id="fileInput" style="display: none"  type="file" ></el-input>
-              <img src="../resource/编辑.png " style="width: 50px;height: 50px;margin-left: 45%">
+              <img :src="userData.imgUrl" style="object-fit: cover;max-width: 95%;max-height: 60% "/>
+              <el-upload :http-request="httpRequest" style="margin-left:40%" show-file-list :crossorigin="'use-credentials'">
+                <view slot="trigger>" >
+                  <img src="../resource/编辑.png " style="width: 50px;height: 50px;margin-left: 45%" >
+                </view>
+              </el-upload>
+
             </el-card>
           </div>
           <div style="z-index: 0;margin-top: 5%">
@@ -37,7 +41,7 @@
                 <message-item type="创建日期" :data="userData.startTime" ></message-item>
               </div>
               <template #footer>
-                <el-button size="large" style="margin-left: 90%"  @click="uploadMessage">
+                <el-button size="large" style="margin-left: 90%"  @click="uploadMessage" >
                   确认
                 </el-button>
               </template>
@@ -63,19 +67,35 @@
 import router from "@/router";
 import MessageItem from "@/components/item/messageItem.vue";
 import { ArrowLeft } from '@element-plus/icons-vue'
-import {loadingData} from "@/utilTs/util";
+import {loadingData,uploadFile} from "@/utilTs/util";
 import type {USERDATA} from "@/utilTs/util";
 import Axios from "axios"
-import {ElMessage} from "element-plus";
+import {ElMessage, type UploadFile, type UploadFiles, type UploadRequestOptions} from "element-plus";
+import {defalutAvatar} from '@/utilTs/util'
+import mitt from 'mitt'
+import {ref} from "vue";
 
 Axios.defaults.withCredentials =true;
+const emitter = mitt()
+
+
 
 export default {
   components: {MessageItem},
   // 组合式API部分，存放非数据变量
+
+
   setup() {
+    const defaultUrl=ref(defalutAvatar);
+    const httpRequest =(options: UploadRequestOptions ) : void=>{
+      const fileTo=options.file
+      uploadFile(fileTo).then(res=>{
+        console.log(res.data.data.links.url)
+        emitter.emit('urlChange',res.data.data.links.url);
+      })
+    };
     return {
-      ArrowLeft
+      ArrowLeft,defaultUrl,httpRequest
     }
 
   },
@@ -93,8 +113,13 @@ export default {
       belongDept: "",
       startTime: "",
     }
+    function handleSuccess(response: any, uploadFile: UploadFile, uploadFiles: UploadFiles){
+      console.log(uploadFiles)
+
+    }
     return {
       userData :defaultData,
+      handleSuccess,
     }
   },
   methods: {
@@ -126,12 +151,11 @@ export default {
       })
     },
     changeData( e : string, k:string){
-      if(k==='用户昵称'){
-        //这儿应该先判断一下是否为空才行吧
-        if (e.length < 0) {
+      if(k==='用户昵称') {
+        if (e.length <= 0) {
           return;
         }
-        this.userData.userName=e;
+        this.userData.userName = e;
       }
       else if(k==='手机号码')
       {
@@ -140,13 +164,16 @@ export default {
       else if(k==='用户邮箱'){
         this.userData.userEmail=e
       }
-
-    }
+    },
   },
   // `mounted` 是生命周期钩子，之后我们会讲到
   mounted() {
+    emitter.on('urlChange', e => this.userData.imgUrl=e as string )
     loadingData().then((res)=>{
       this.userData=res
+      if(this.userData.imgUrl===''){
+        this.userData.imgUrl=defalutAvatar
+      }
     })
   }
 }
