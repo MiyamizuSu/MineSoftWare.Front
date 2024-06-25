@@ -22,6 +22,10 @@ export interface Conference {
     endTime: string,
     imgUrl: string
 }
+export const PathNameTable= {
+    "/mainView":"主页",
+    "/mainView/conferenceManagement":"会议管理"
+}
 
 const requestHeader={
     'Authorization': `Bearer 292|zBT0I9biZt2OZ37m2vjpm5gW7ibeqmdcyUyiSlqK`,

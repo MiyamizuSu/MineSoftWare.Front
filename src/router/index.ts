@@ -29,11 +29,6 @@ const routes = [
         component: userMessage_View
     },
     {
-        path: "/conferenceManagement",
-        component: ConferenceManagement
-    },
-
-    {
         path: "/",
         redirect: "/basicView"
     },

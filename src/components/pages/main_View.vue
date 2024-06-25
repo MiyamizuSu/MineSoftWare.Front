@@ -1,18 +1,18 @@
 <template>
-  <el-dialog v-model="passwordC" width="400" center draggable>
-      <template #header>
-        <el-text>修改密码</el-text>
-      </template>
+  <el-dialog v-model="passwordC" center draggable width="400">
+    <template #header>
+      <el-text>修改密码</el-text>
+    </template>
 
-      <el-input v-model="newPassword" placeholder="请输入新密码" ></el-input>
-    <div style="margin-top:20px " >
-    <el-input  placeholder="请输入验证码" style="width:257px;"></el-input>
+    <el-input v-model="newPassword" placeholder="请输入新密码"></el-input>
+    <div style="margin-top:20px ">
+      <el-input placeholder="请输入验证码" style="width:257px;"></el-input>
       <el-button size="default" style="width: 100px; margin-left: 10px">
         获取验证码
       </el-button>
     </div>
     <template #footer>
-      <el-button type="danger" @click="handlePassword" > 确认 </el-button>
+      <el-button type="danger" @click="handlePassword"> 确认</el-button>
     </template>
   </el-dialog>
   <el-container>
@@ -62,7 +62,7 @@
     <el-main style=" display: flex;padding: 0;height: 865px">
       <el-container v-if="userType==='1'">
         <!--                侧边栏视图部分-->
-        <el-aside style="width: 210px;height:100%">
+        <el-aside style="width: 170px;height:100%">
           <div style="height: 100%">
             <el-row style="height: 100%">
               <el-menu class="el-menu-vertical-demo"
@@ -114,9 +114,21 @@
             </el-row>
           </div>
         </el-aside>
-        <el-main>
-          <router-view></router-view>
+        <el-main style="padding-left: 0">
+          <el-container>
+            <el-header height="15px">
+              <el-breadcrumb separator=">" style="margin-top:-10px">
+                <el-breadcrumb-item :to="{ path: '/mainView' }">homepage</el-breadcrumb-item>
+                <el-breadcrumb-item :to="{ path: '/mainView/conferenceManagement' }">homepage
+                </el-breadcrumb-item>
+              </el-breadcrumb>
+            </el-header>
+            <el-main>
+              <router-view>
 
+              </router-view>
+            </el-main>
+          </el-container>
         </el-main>
       </el-container>
     </el-main>
@@ -166,7 +178,6 @@ export default {
       belongCompany: "",
       belongDept: "",
       startTime: "",
-
     }
     return {
       userMessage:defaultData,
@@ -197,8 +208,8 @@ export default {
     },
     handleSelect(index: string) {
       this.nowIndex = index;
-      if (index == "0") {
-        router.push("/mainView");
+      if(index==='0'){
+        router.push("/mainView")
       }
       else if (index === "1") {
 
@@ -220,28 +231,26 @@ export default {
       Axios.post("http://localhost:8080/user/updatePassword",passwordChange,{
         withCredentials:true
       })
-      .then(res => {
-        console.log(res)
-        if (res.status === 200) {
-            if (res.data.statusCode === "200") {
-              ElMessage({
-                message: '修改完成',
-                grouping: true,
-                type: 'success',
-              })
+          .then(res => {
+            console.log(res)
+            if (res.status === 200) {
+              if (res.data.statusCode === "200") {
+                ElMessage({
+                  message: '修改完成',
+                  grouping: true,
+                  type: 'success',
+                })
+              } else if (res.data.statusCode === "304") {
+                ElMessage({message: "不能将用户密码修改为空！", type: "warning"});
+              } else {
+                ElMessage({
+                  message: '发生了未知的错误',
+                  grouping: true,
+                  type: 'error',
+                })
+              }
             }
-            else if (res.data.statusCode === "304") {
-              ElMessage({message: "不能将用户密码修改为空！", type: "warning"});
-            }
-            else{
-              ElMessage({
-                message: '发生了未知的错误',
-                grouping: true,
-                type: 'error',
-              })
-            }
-        }
-      })
+          })
     }
   },
   // `mounted` 是生命周期钩子，之后我们会讲到

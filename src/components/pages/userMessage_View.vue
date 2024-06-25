@@ -83,8 +83,6 @@ const emitter = mitt()
 export default {
   components: {MessageItem},
   // 组合式API部分，存放非数据变量
-
-
   setup() {
     const defaultUrl=ref(defalutAvatar);
     //

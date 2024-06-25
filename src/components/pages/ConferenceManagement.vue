@@ -32,8 +32,6 @@
   <!-- 外围边框部分不用再写,只要写el-main里的部分 -->
   <!--    <img class="bg" src="../images/bg1.jpg" alt="背景">-->
   <el-container>
-
-
         <el-main>
           <!-- 搜索框 -->
           <div >
