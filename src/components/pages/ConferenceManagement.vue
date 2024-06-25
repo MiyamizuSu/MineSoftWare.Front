@@ -1,10 +1,6 @@
 <!-- src/views/MainView.vue -->
 <style>
-/* 引用外部 CSS 文件 */
-.form-container {
-  width: 400px;
-  margin: 50px auto;
-}
+
 .avatar-uploader .avatar {
   width: 178px;
   height: 178px;
