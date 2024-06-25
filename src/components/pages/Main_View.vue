@@ -114,18 +114,18 @@
             </el-row>
           </div>
         </el-aside>
-        <el-main style="padding-left: 0">
+        <el-main style="padding-left: 0 ;padding-top: 0">
           <el-container>
             <el-header height="15px">
-              <el-breadcrumb separator=">" style="margin-top:-10px">
-                <el-breadcrumb-item :to="{ path: '/mainView' }">homepage</el-breadcrumb-item>
-                <el-breadcrumb-item :to="{ path: '/mainView/conferenceManagement' }">homepage
-                </el-breadcrumb-item>
-              </el-breadcrumb>
+<!--              <el-breadcrumb separator=">" style="margin-top:10px">-->
+<!--                <el-breadcrumb-item :to="{ path: item }" v-for="item in pathList">{{pathNameTable[item]}}</el-breadcrumb-item>-->
+<!--              </el-breadcrumb>-->
             </el-header>
-            <el-main>
-              <router-view>
-
+            <el-main style="padding-top: 0;padding-left: 0">
+              <router-view v-slot="{ Component }">
+                <transition name="el-zoom-in-center">
+                  <component :is="Component" :key="$route.path" />
+                </transition>
               </router-view>
             </el-main>
           </el-container>
@@ -135,7 +135,7 @@
     <el-footer style="border-top: 1px solid #eee;height: 30px;background: black;background-image: none;">
       <div class="CopyrightContainer">
         <label>
-          Copyright © 2024 Mygo Inc. All rights reserved.
+          Copyright © 2024 测盟汇 Inc. All rights reserved.
         </label>
       </div>
     </el-footer>
@@ -148,8 +148,8 @@
 <script lang="ts">
 import router from "@/router";
 import {UserFilled} from "@element-plus/icons-vue";
-import {ref} from "vue";
-import {loadingData, type USERDATA} from "@/utilTs/util";
+import {computed, ref, watch} from "vue";
+import {loadingData, type USERDATA,PathNameTable} from "@/utilTs/util";
 import Axios from "axios";
 import {ElMessage} from "element-plus";
 import axios from "axios";
@@ -162,10 +162,18 @@ export default {
     const userType = ref("1")
     const nowIndex = ref("0")
     const passwordC = ref(false)
+    const pathList = ref([] as string[])
+    const pathNameTable= ref(PathNameTable  as Record<string, string>);
     return {
-      UserFilled, userType, nowIndex,passwordC
+      UserFilled, userType, nowIndex,passwordC,pathList,pathNameTable
     }
   },
+computed:{
+    pathToName(e : string){
+      return this.pathNameTable[e] as string
+    }
+}
+,
   // 选项式API部分，存放实体数据变量
   data() {
     const defaultData : USERDATA={
@@ -182,7 +190,7 @@ export default {
     return {
       userMessage:defaultData,
       newPassword:"",
-
+      pathTest:"{ path: '/mainView' }",
     }
   },
   methods: {
@@ -210,17 +218,29 @@ export default {
       this.nowIndex = index;
       if(index==='0'){
         router.push("/mainView")
+        this.pathList.splice(0,this.pathList.length);
+        this.pathList.push("/mainView")
       }
       else if (index === "1") {
 
-      } else if (index === "2") {
+      }
+      else if (index === "2") {
 
-      } else if (index === "3") {
+      }
+      else if (index === "3") {
 
-      } else if (index === "4") {
-
-      } else if (index === "5") {
-        router.push("/mainView/conferenceManagement");
+      }
+      else if (index === "4") {
+        router.push("/mainView/courseManagement")
+        this.pathList.splice(0,this.pathList.length);
+        this.pathList.push("/mainView")
+        this.pathList.push("/mainView/courseManagement")
+      }
+      else if (index === "5") {
+        router.push("/mainView/conferenceManagement")
+        this.pathList.splice(0,this.pathList.length);
+        this.pathList.push("/mainView")
+        this.pathList.push("/mainView/conferenceManagement")
       }
     },
     handlePassword(){
@@ -256,6 +276,7 @@ export default {
   // `mounted` 是生命周期钩子，之后我们会讲到
   mounted() {
     loadingData().then((res)=>{
+      this.pathList.push("/mainView")
       this.userMessage=res;
     })
   }

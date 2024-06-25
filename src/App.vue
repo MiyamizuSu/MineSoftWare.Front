@@ -34,27 +34,6 @@ export default {
   },
   // `mounted` 是生命周期钩子，之后我们会讲到
   mounted() {
-      // console.log(this.isLogin);
-      // if (!this.isLogin){
-      //  router.push("/basicView");
-      // }
-      // else{
-      //   router.push("/mainView")
-      // }
-    // axios.post("http://localhost:8080/checkSession",{},{
-    //   withCredentials: true
-    // }).then((res=>{
-    //   if (res.status == 200) {
-    //     console.log(res.data);
-    //     if (res.data.statusCode === 200) {
-    //       router.push("/mainView");
-    //     }
-    //     else{
-    //       router.push("/basicView");
-    //     }
-    //   }
-    // }))
-
 
   }
 }

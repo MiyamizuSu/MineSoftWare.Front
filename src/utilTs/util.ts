@@ -24,7 +24,8 @@ export interface Conference {
 }
 export const PathNameTable= {
     "/mainView":"主页",
-    "/mainView/conferenceManagement":"会议管理"
+    "/mainView/conferenceManagement":"会议管理",
+    "/mainView/courseManagement":"课程管理"
 }
 
 const requestHeader={
