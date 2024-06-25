@@ -3,6 +3,7 @@ import loginVue from "@/components/pages/login_View.vue";
 import main_NoL_View from "@/components/pages/main_NoL_View.vue";
 import main_View from "@/components/pages/main_View.vue";
 import userMessage_View from "@/components/pages/userMessage_View.vue";
+import ConferenceManagement from "@/components/pages/ConferenceManagement.vue";
 
 const routes = [
     {
@@ -21,6 +22,11 @@ const routes = [
         path: "/userMessageView",
         component: userMessage_View
     },
+    {
+        path: "/conferenceManagement",
+        component: ConferenceManagement
+    },
+
     {
         path: "/",
         redirect: "/basicView"

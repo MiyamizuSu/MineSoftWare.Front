@@ -1,15 +1,26 @@
 import Axios, {type AxiosResponse} from 'axios';
 
 export interface USERDATA{
-    "userName": string,
-    "userRealName": string,
-    "userPhoneNumber": string,
-    "userEmail": string,
-    "imgUrl": string,
-    "userType": number,
-    "belongCompany": string,
-    "belongDept": string,
-    "startTime": string,
+    userName: string,
+    userRealName: string,
+    userPhoneNumber: string,
+    userEmail: string,
+    imgUrl: string,
+    userType: number,
+    belongCompany: string,
+    belongDept: string,
+    startTime: string,
+}
+
+export interface Conference {
+    conferenceId: number,
+    conferenceName: string,
+    creator: string,
+    state: string, //会议状态：进行中 / 已结束
+    content: string,
+    beginTime: string,
+    endTime: string,
+    imgUrl: string
 }
 
 const requestHeader={

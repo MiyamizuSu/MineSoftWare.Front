@@ -218,6 +218,17 @@ export default {
     },
     handleSelect(index: string) {
       this.nowIndex = index;
+      if (index === "1") {
+
+      } else if (index === "2") {
+
+      } else if (index === "3") {
+
+      } else if (index === "4") {
+
+      } else if (index === "5") {
+        router.push("/conferenceManagement");
+      }
     },
     handlePassword(){
       const passwordChange={
