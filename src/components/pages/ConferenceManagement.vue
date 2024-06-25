@@ -129,7 +129,7 @@
 
           </el-table>
 
-          <el-dialog v-model="addConference_dialogFormVisible" title="添加会议" style="width: 80%; height: 700px;"
+          <el-dialog v-model="addConference_dialogFormVisible" title="添加会议" style="width: 80%; height: 750px; overflow-y: auto;"
                      v-bind:before-close="handle_dialogClose">
             <el-form :model="add_conferenceForm" :rules="add_conferenceRules">
               <el-form-item label="会议名称" prop="conferenceName" label-width="120px">
@@ -138,11 +138,11 @@
               <el-form-item label="会议封面" prop="imgUrl" label-width="120px">
                 <el-upload
                     class="avatar-uploader"
-                    action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-                    :show-file-list="false"
-
+                    :show-file-list="true"
+                    :http-request="httpRequest"
+                    :crossorigin="'use-credentials'"
                 >
-                  <img v-if="imageUrl" :src="add_conferenceForm.imgUrl" class="avatar" style="width: 200px;">
+                  <img v-if="uploadUrl" :src="uploadUrl" class="avatar" style="width: 220px; max-height: 250px;">
                   <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
                 </el-upload>
               </el-form-item>
@@ -186,30 +186,21 @@
             </div>
           </el-dialog>
 
-          <el-dialog title="修改会议" v-model="updateConference_dialogFormVisible"  style="width: 80%; height: 700px;"
+          <el-dialog title="修改会议" v-model="updateConference_dialogFormVisible"  style="width: 80%; height: 750px; overflow-y: auto;"
           >
             <el-form :model="edit_conferenceForm" :rules="add_conferenceRules">
               <el-form-item label="会议名称" prop="conferenceName" label-width="120px">
                 <el-input type="text" v-model="edit_conferenceForm.conferenceName" placeholder="请输入会议名称" autocomplete="off" ></el-input>
               </el-form-item>
               <el-form-item label="会议封面" prop="imgUrl" label-width="120px">
-                <!--                  <el-upload-->
-                <!--                      class="avatar-uploader"-->
-                <!--                      action="https://jsonplaceholder.typicode.com/posts/"-->
-                <!--                      :show-file-list="false"-->
-                <!--                  >-->
-                <!--                    <img v-if="imageUrl" :src="selectedConference.imgUrl" class="avatar" style="width: 200px;">-->
-                <!--                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>-->
-                <!--                    <div slot="tip" class="el-upload__tip" style="color: red; margin-top: 0;">请上传大小不超过5MB 格式为png/jpg/jpeg的文件</div>-->
-                <!--                  </el-upload>-->
 
                 <el-upload
                     class="avatar-uploader"
-                    action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-                    :show-file-list="false"
-
+                    :show-file-list="true"
+                    :http-request="httpRequest"
+                    :crossorigin="'use-credentials'"
                 >
-                  <img v-if="selectedConference.imgUrl" :src="selectedConference.imgUrl" class="avatar" style="width: 200px;">
+                  <img v-if="uploadUrl" :src="uploadUrl" class="avatar" style="width: 220px; max-height: 250px;">
                   <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
                 </el-upload>
               </el-form-item>
@@ -280,22 +271,31 @@
 
 <script lang="ts">
 import axios from "axios";
-import {ElMessage, type TabsPaneContext, ElMessageBox} from "element-plus";
+import {ElMessage, type TabsPaneContext, ElMessageBox, type UploadRequestOptions} from "element-plus";
 import router from "@/router";
 import {useRoute} from "vue-router";
 import {ref} from "vue";
 import {UserFilled} from "@element-plus/icons-vue";
-import {loadingData, type USERDATA, type Conference} from "@/utilTs/util";
+import {loadingData, type USERDATA, type Conference, uploadFile} from "@/utilTs/util";
+import mitt from "mitt";
 
 axios.defaults.withCredentials =true;
+const emitter = mitt()
 
 export default {
   setup() {
     // const userType = ref("1")
     const nowIndex = ref("5");
-    // const tableData = ref([]);
+    const httpRequest =(options: UploadRequestOptions ) : void=>{
+      const fileTo=options.file
+      uploadFile(fileTo).then(res=>{
+        console.log(res.data.data.links.url)
+        emitter.emit('urlChange',res.data.data.links.url); //发出改变信号，即向图床上传图片获得的url
+      })
+    };
+
     return {
-      UserFilled, nowIndex
+      UserFilled, nowIndex, httpRequest
     }
   },
   data() {
@@ -338,58 +338,33 @@ export default {
           }
         }]
       },
+      uploadUrl: "", //当前向图床上传图片所获得的url
 
       addConference_dialogFormVisible: false,
-      add_conferenceForm: {
+      add_conferenceForm: <Conference>{
+        conferenceId: -1,
         conferenceName: "",
-        imgUrl: "",
-        content: "",
         creator: "",
+        state: "", //会议状态：进行中 / 已结束
+        content: "",
         beginTime: "",
-        endTime: ""
+        endTime: "",
+        imgUrl: "",
       },
       updateConference_dialogFormVisible: false,
-      edit_conferenceForm: {
+      edit_conferenceForm: <Conference>{
+        conferenceId: -1,
         conferenceName: "",
-        imgUrl: "",
-        content: "",
         creator: "",
+        state: "", //会议状态：进行中 / 已结束
+        content: "",
         beginTime: "",
-        endTime: ""
+        endTime: "",
+        imgUrl: "",
       },
       tableData: <Conference[]>[],
       multipleSelection: <Conference[]>[],
       conferenceList: <Conference[]>[
-        {
-          conferenceId: 1,
-          conferenceName: "加快工业软件自主创新讨论会",
-          creator: "江苏省软件产品检测中心",
-          state: "已结束", //会议状态：进行中 / 已结束
-          content: "江苏省出台政策措施加快工业软件自主创新",
-          beginTime: "2024-06-05 13:00:00",
-          endTime: "",
-          imgUrl: "https://ts1.cn.mm.bing.net/th/id/R-C.be55050ea711326724b0862f590700c2?rik=l%2bmHV%2f7Nm9gAhg&riu=http%3a%2f%2fpic.52112.com%2f180201%2fBusiness-meeting%2fBqOa49RaEe.jpg&ehk=x90e%2fMmGhIEj1kb3nZhMT9Np8oM%2fNtNrd3Ht32sbjC0%3d&risl=&pid=ImgRaw&r=0",
-        },
-        {
-          conferenceId: 2,
-          conferenceName: "聚智创新 质惠未来",
-          creator: "北方实验室（沈阳）股份有限公司",
-          state: "已结束", //会议状态：进行中 / 已结束
-          content: "北方实验室带您走近第一届信息系统工程监理高质量大会",
-          beginTime: "2024-05-27 10:00:00",
-          endTime: "",
-          imgUrl: "https://ts1.cn.mm.bing.net/th/id/R-C.baceed808eeacf0513fe11b613def9a5?rik=xHyj%2bXQqF4O7FA&riu=http%3a%2f%2f5b0988e595225.cdn.sohucs.com%2fimages%2f20180521%2fe91e1094336941da9143c0dea5381ef4.jpeg&ehk=ovfLQ1hWrygli2m3Ty%2fLI1q7wb%2b7680UEQlqzQW3iwA%3d&risl=&pid=ImgRaw&r=0",
-        },
-        {
-          conferenceId: 3,
-          conferenceName: "主题教育专题民主生活会",
-          creator: "上海计算机软件技术开发中心",
-          state: "进行中", //会议状态：进行中 / 已结束
-          content: "上海软件中心召开主题教育专题民主生活会",
-          beginTime: "2024-06-19 14:00:00",
-          endTime: "",
-          imgUrl: "",
-        },
 
       ],
       selectedConference: <Conference>{
@@ -430,27 +405,15 @@ export default {
   mounted() {
     // const route = useRoute();
     this.loadUser();
-    this.tableData = this.conferenceList;
+    this.loadConferences();
+    //规定针对事件信号的响应机制(handler)，
+    emitter.on('urlChange', e => this.uploadUrl=e as string )
   },
 
   methods: {
 
     //  上传图片这部分得看element-plus文档
-    handleAvatarSuccess(res, file) {
-      // this.imageUrl = URL.createObjectURL(file.raw);
-    },
-    beforeAvatarUpload(file: File) {
-      // const isJPG = file.type === 'image/jpeg';
-      // const isLt2M = file.size / 1024 / 1024 < 2;
-      //
-      // if (!isJPG) {
-      //   ElMessage({message: '上传头像图片只能是 JPG 格式!', type: "warning"});
-      // }
-      // if (!isLt2M) {
-      //   ElMessage({message: '上传头像图片大小不能超过 2MB!', type: "warning"});
-      // }
-      // return isJPG && isLt2M;
-    },
+
     handleSelectionChange(val: Conference[]) {
       this.multipleSelection = val;
       // console.log(this.multipleSelection);
@@ -482,23 +445,54 @@ export default {
       this.addConference_dialogFormVisible = false;
     },
     confirm_addConference() {
-      ElMessage({message: "添加成功！", type: "success"});
-      this.addConference_dialogFormVisible = false;
+      this.add_conferenceForm.imgUrl = this.uploadUrl;
+      if (this.add_conferenceForm.conferenceName=="" || this.add_conferenceForm.creator == "" || this.add_conferenceForm.content==""
+          || this.add_conferenceForm.beginTime == "" || this.add_conferenceForm.endTime == "") {
+        ElMessage({message: "不能将除会议封面以外的信息设置为空！", type: "warning"});
+        return;
+      }
+      let date1 = new Date(this.add_conferenceForm.beginTime);
+      let date2 = new Date(this.add_conferenceForm.endTime);
+      if (date2.getTime() < date1.getTime()) {
+        ElMessage({message: "结束时间不能早于开始时间！", type: "error"});
+        return;
+      }
+      let dateNow = new Date();
+      if (date2.getTime() > dateNow.getTime()) {
+        this.add_conferenceForm.state = "进行中";
+      } else {
+        this.add_conferenceForm.state = "已结束";
+      }
+      axios.post("http://localhost:8080/conference/add", this.add_conferenceForm).then(res => {
+        if (res.data.statusCode == "200") {
+          ElMessage({message: "添加成功！", type: "success"});
+          this.loadConferences();
+          this.addConference_dialogFormVisible = false;
+        }
+        else if (res.data.statusCode == "501") {
+          ElMessage({message: "该会议名称已存在！会议添加失败~", type: "warning"});
+        } else {
+          ElMessage({message: "发生了未知的错误", type: "error"});
+        }
+      });
+
     },
     start_updateConference(conference: Conference) {
       this.selectedConference = conference;
+      this.uploadUrl = conference.imgUrl;
       // ElMessage({message: "修改按钮被点击了！", type: "info"});
       if (conference.conferenceId < 0) {
         ElMessage({message: "请先选择数据项！", type: "info"});
         return;
       }
+      this.edit_conferenceForm.conferenceId = conference.conferenceId;
       this.edit_conferenceForm.conferenceName = conference.conferenceName;
       this.edit_conferenceForm.imgUrl = conference.imgUrl;
       this.edit_conferenceForm.content = conference.content;
       this.edit_conferenceForm.creator = conference.creator;
       this.edit_conferenceForm.beginTime = conference.beginTime;
       this.edit_conferenceForm.endTime = conference.endTime;
-      this.imageUrl = conference.imgUrl;
+      this.edit_conferenceForm.state = conference.state;
       this.updateConference_dialogFormVisible = true;
     },
     cancel_updateConference() {
@@ -506,8 +500,42 @@ export default {
     },
     confirm_updateConference() {
       //axios向后端发送更新请求
-      ElMessage({message: "修改成功！", type: "success"});
-      this.updateConference_dialogFormVisible = false;
+      this.edit_conferenceForm.imgUrl = this.uploadUrl;
+      if (this.edit_conferenceForm.conferenceName=="" || this.edit_conferenceForm.creator == "" || this.edit_conferenceForm.content==""
+      || this.edit_conferenceForm.beginTime == "" || this.edit_conferenceForm.endTime == "") {
+        ElMessage({message: "不能将除会议封面以外的信息设置为空！", type: "warning"});
+        return;
+      }
+      let date1 = new Date(this.edit_conferenceForm.beginTime);
+      let date2 = new Date(this.edit_conferenceForm.endTime);
+      if (date2.getTime() < date1.getTime()) {
+        ElMessage({message: "结束时间不能早于开始时间！", type: "error"});
+        return;
+      }
+      let dateNow = new Date();
+      if (date2.getTime() > dateNow.getTime()) {
+        this.edit_conferenceForm.state = "进行中";
+      } else {
+        this.edit_conferenceForm.state = "已结束";
+      }
+      axios.post("http://localhost:8080/conference/getByName", {
+        conferenceName: this.edit_conferenceForm.conferenceName
+      }).then(res1 => {
+        if (res1.data.conference != null && this.edit_conferenceForm.conferenceName !== this.selectedConference.conferenceName) {
+          console.log(res1.data);
+          ElMessage({message: "您输入的会议名已存在，修改会议失败~", type: "warning"});
+          return;
+        }
+        axios.post("http://localhost:8080/conference/update", this.edit_conferenceForm).then(
+          res2 => {
+            if (res2.data.isOk) {
+              ElMessage({message: "修改成功！", type: "success"});
+              this.loadConferences();
+              this.updateConference_dialogFormVisible = false;
+            }
+        })
+
+      });
     },
     deleteSingleConference(conference: Conference) {
       ElMessageBox.confirm(
@@ -519,8 +547,15 @@ export default {
             type: 'warning',
           }
       ).then(() => { //确认
+        axios.post("http://localhost:8080/conference/deleteById", {
+          conferenceId: conference.conferenceId
+        }).then(res => {
+          if (res.data.isOk) {
+            this.loadConferences();
+            ElMessage({message: "删除成功！", type: "success"});
+          }
+        });
 
-        ElMessage({message: "删除成功", type: "success"});
       }).catch(() => { //取消
         ElMessage({message: "已取消删除~", type: "info"});
       });
@@ -541,18 +576,22 @@ export default {
             type: "warning",
           }
       ).then(() => { //确认
+        let n = this.multipleSelection.length;
         for (const conference of this.multipleSelection) {
-          // axios.post("http://localhost:8080/conference/deleteById", {
-          //   conferenceId: conference.conferenceId
-          // }).then(res => {
-          //   if (res.data.isOk) {
-          //     //
-          //   }
-          // });
-          console.log(conference);
+          axios.post("http://localhost:8080/conference/deleteById", {
+            conferenceId: conference.conferenceId
+          }).then(res => {
+            if (res.data.isOk) {
+              console.log(`编号为${conference.conferenceId}的会议已被删除.`);
+              n -= 1;
+            }
+          });
+          //全删除完成后更新会议列表数据
+          if (n == 0) {
+            this.loadConferences();
+            ElMessage({message: "删除成功", type: "success"});
+          }
         }
-        ElMessage({message: "删除成功", type: "success"});
-        //更新会议列表数据
       }).catch(() => { //取消
         ElMessage({message: "已取消删除~", type: "info"});
       });
@@ -576,16 +615,25 @@ export default {
               if (this.currentUser.imgUrl==null || this.currentUser.imgUrl=="") {
                 this.currentUser.imgUrl = this.default_imgUrl;
               }
-            } else {
+            }
+            else {
               ElMessage({message: res.data.msg, type: "warning"});
             }
           }
       );
 
-
     },
     loadConferences() { //重新从数据库中加载会议列表数据
-
+      axios.get("http://localhost:8080/conference/listAll").then(
+          res => {
+            if (res.data.conferenceList != null) {
+              this.conferenceList = res.data.conferenceList;
+              console.log("从后端加载的conferenceList: ");
+              console.log(this.conferenceList);
+              this.tableData = this.conferenceList;
+            }
+          }
+      )
     },
     saveUser() {
       axios.post("http://localhost:8080/user/update", this.currentUser).then(

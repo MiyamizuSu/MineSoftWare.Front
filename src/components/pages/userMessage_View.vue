@@ -15,7 +15,7 @@
             <el-card class="box-card" style="height: 700px;width: 700px">
               <img :src="userData.imgUrl" style="object-fit: cover;max-width: 95%;max-height: 60% "/>
               <el-upload :http-request="httpRequest" style="margin-left:40%" show-file-list :crossorigin="'use-credentials'">
-                <view slot="trigger>" >
+                <view slot="trigger" >
                   <img src="../resource/编辑.png " style="width: 50px;height: 50px;margin-left: 45%" >
                 </view>
               </el-upload>
@@ -71,7 +71,7 @@ import {loadingData,uploadFile} from "@/utilTs/util";
 import type {USERDATA} from "@/utilTs/util";
 import Axios from "axios"
 import {ElMessage, type UploadFile, type UploadFiles, type UploadRequestOptions} from "element-plus";
-import {defalutAvatar} from '@/utilTs/util'
+import {defaultAvatar} from '@/utilTs/util'
 import mitt from 'mitt'
 import {ref} from "vue";
 
@@ -86,7 +86,7 @@ export default {
 
 
   setup() {
-    const defaultUrl=ref(defalutAvatar);
+    const defaultUrl=ref(defaultAvatar);
     //
     const httpRequest =(options: UploadRequestOptions ) : void=>{
       const fileTo=options.file
@@ -173,7 +173,7 @@ export default {
     loadingData().then((res)=>{
       this.userData=res
       if(this.userData.imgUrl===''){
-        this.userData.imgUrl=defalutAvatar
+        this.userData.imgUrl=defaultAvatar
       }
     })
   }

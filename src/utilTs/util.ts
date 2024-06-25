@@ -30,7 +30,7 @@ const requestHeader={
     'Accept':'application/json'
 }
 
-export const defalutAvatar="https://img.picui.cn/free/2024/06/24/6678e71f60fa1.jpg"
+export const defaultAvatar="https://img.picui.cn/free/2024/06/24/6678e71f60fa1.jpg"
 
 export const loadingData = (): Promise<USERDATA> => Axios.post("http://localhost:8080/user/loading", {}, {
     withCredentials: true
