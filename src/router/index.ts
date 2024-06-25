@@ -16,7 +16,13 @@ const routes = [
     },
     {
         path: "/mainView",
-        component: main_View
+        component: main_View,
+        children: [
+            {
+                path: "conferenceManagement",
+                component: ConferenceManagement
+            }
+        ]
     },
     {
         path: "/userMessageView",

@@ -32,7 +32,11 @@
               <div style="margin-left: 15px;margin-top: -9px">
                 <el-dropdown @command="handleCommand">
                 <span class="el-dropdown-link">
-                  <el-avatar :icon="UserFilled"/>
+<!--                  <el-avatar :icon="UserFilled"/>-->
+                  <el-avatar v-bind:src="userMessage.imgUrl" shape="circle" v-if="userMessage.userType >= 0"
+                             style="height: 45px; width: 45px; margin-top: 0; ">
+                  </el-avatar>
+                  <el-avatar :icon="UserFilled" v-else style="height: 40px; width: 40px; " />
                 </span>
                   <template #dropdown>
                     <el-dropdown-menu>
@@ -111,33 +115,8 @@
           </div>
         </el-aside>
         <el-main>
-          <div v-if="nowIndex==='1'">
-            <!--
-             用户管理前端代码写在这儿\\
-             或者单独写成一个组件也行，只要保证样式大小不超出范围即可
-             -->
-          </div>
-          <div v-else-if="nowIndex==='2'">
-            <!--
-            组织管理前端代码写在这儿\\
-            或者单独写成一个组件也行，只要保证样式大小不超出范围即可
-            -->
-          </div>
-          <div v-else-if="nowIndex==='3'">
-            <!--            行业动态管理前端代码写在这儿\\
-            或者单独写成一个组件也行，只要保证样式大小不超出范围即可
-            -->
-          </div>
-          <div v-else-if="nowIndex==='4'">
-            <!--            课程管理管理前端代码写在这儿\\
-            或者单独写成一个组件也行，只要保证样式大小不超出范围即可
-            -->
-          </div>
-          <div v-else-if="nowIndex==='5'">
-            <!--            会议管理前端代码写在这儿\\
-            或者单独写成一个组件也行，只要保证样式大小不超出范围即可
-            -->
-          </div>
+          <router-view></router-view>
+
         </el-main>
       </el-container>
     </el-main>
@@ -218,7 +197,10 @@ export default {
     },
     handleSelect(index: string) {
       this.nowIndex = index;
-      if (index === "1") {
+      if (index == "0") {
+        router.push("/mainView");
+      }
+      else if (index === "1") {
 
       } else if (index === "2") {
 
@@ -227,7 +209,7 @@ export default {
       } else if (index === "4") {
 
       } else if (index === "5") {
-        router.push("/conferenceManagement");
+        router.push("/mainView/conferenceManagement");
       }
     },
     handlePassword(){

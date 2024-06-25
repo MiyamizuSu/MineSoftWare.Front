@@ -87,6 +87,7 @@ export default {
 
   setup() {
     const defaultUrl=ref(defalutAvatar);
+    //
     const httpRequest =(options: UploadRequestOptions ) : void=>{
       const fileTo=options.file
       uploadFile(fileTo).then(res=>{

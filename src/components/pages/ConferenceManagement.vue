@@ -29,104 +29,10 @@
 </style>
 
 <template>
-
+  <!-- 外围边框部分不用再写,只要写el-main里的部分 -->
   <!--    <img class="bg" src="../images/bg1.jpg" alt="背景">-->
   <el-container>
-    <!--        顶部logo部分-->
-    <el-header class="Header" style="padding-left: 0; padding-right: 0;border: 1px solid #eee;height: fit-content">
-      <el-row style="height: 60px">
-        <el-col :span="20" style="height: 60px">
-          <!--一个-col的长度为24SPan-->
-          <div class="projectLabelC">
-            <label class="projectLabel">测盟汇管理系统-会议管理</label>
-          </div>
-        </el-col>
-        <el-col :span="4" style="height: 60px">
-          <div class="userMessageContainer">
-            <div class="usernameContainer">
-              <label style="min-width: 60px; font-size: 17px;" v-if="currentUser.userType >= 0"> {{ currentUser.userName }}</label>
-              <label style="min-width: 60px; font-size: 17px;" v-else> 未登录 </label>
-              <div style="margin-left: 15px;margin-top: -9px">
-                <el-dropdown>
-                <span class="el-dropdown-link">
-                  <el-avatar v-bind:src="currentUser.imgUrl" shape="circle" v-if="currentUser.userType >= 0"
-                             style="height: 55px; width: 55px; margin-top: 0; ">
-                  </el-avatar>
-                  <el-avatar :icon="UserFilled" v-else />
-                </span>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item  @click="toUserMessage">
-                        <span>个人信息</span>
-                      </el-dropdown-item>
-                      <el-dropdown-item  @click="logout">
-                        <span>退出账号</span>
-                      </el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-              </div>
-            </div>
-          </div>
-        </el-col>
-      </el-row>
-    </el-header>
-    <!--    -->
-    <el-main style=" display: flex;padding: 0;height: 865px">
-      <el-container >
-        <!--                侧边栏视图部分-->
-        <el-aside style="width: 210px;height:100%" >
-          <div style="height: 100%">
-            <el-row style="height: 100%">
-              <el-menu class="el-menu-vertical-demo"
-                       :default-active="nowIndex"
-                       style="height: 100%"
-                       @select="handleSelectIndex"
-              >
-                <el-menu-item index="0">
-                  <template #title>
-                    <el-icon>
-                      <Grid/>
-                    </el-icon>
-                    <span>主页</span>
-                  </template>
-                </el-menu-item>
-                <el-menu-item index="1">
-                  <template #title>
-                    <el-icon>
-                      <User/>
-                    </el-icon>
-                    <span>用户管理</span>
-                  </template>
-                </el-menu-item>
-                <el-menu-item index="2">
-                  <el-icon>
-                    <Connection/>
-                  </el-icon>
-                  <span>组织管理</span>
-                </el-menu-item>
-                <el-menu-item index="3">
-                  <el-icon>
-                    <MostlyCloudy/>
-                  </el-icon>
-                  <span>行业动态管理</span>
-                </el-menu-item>
-                <el-menu-item index="4">
-                  <el-icon>
-                    <Notebook/>
-                  </el-icon>
-                  <span>课程管理</span>
-                </el-menu-item>
-                <el-menu-item index="5">
-                  <el-icon>
-                    <ChatLineRound/>
-                  </el-icon>
-                  <span>会议管理</span>
-                </el-menu-item>
-              </el-menu>
-            </el-row>
-          </div>
-        </el-aside>
+
 
         <el-main>
           <!-- 搜索框 -->
@@ -266,6 +172,8 @@
                     v-model="add_conferenceForm.endTime"
                     type="datetime"
                     placeholder="选择日期时间"
+                    value-format="YYYY-MM-DD HH:mm:ss"
+                    value-on-clear=""
                     :picker-options="pickerOptions"
                     style="width: 300px;">
                 </el-date-picker>
@@ -319,7 +227,8 @@
                     v-model="edit_conferenceForm.beginTime"
                     type="datetime"
                     placeholder="选择日期时间"
-                    align="right"
+                    value-format="YYYY-MM-DD HH:mm:ss"
+                    value-on-clear=""
                     :picker-options="pickerOptions"
                     style="width: 300px;">
                 </el-date-picker>
@@ -329,6 +238,8 @@
                     v-model="edit_conferenceForm.endTime"
                     type="datetime"
                     placeholder="选择日期时间"
+                    value-format="YYYY-MM-DD HH:mm:ss"
+                    value-on-clear=""
                     :picker-options="pickerOptions"
                     style="width: 300px;">
                 </el-date-picker>
@@ -353,15 +264,15 @@
 
 
         </el-main>
-      </el-container>
-    </el-main>
-    <el-footer style="border-top: 1px solid #eee;height: 30px;background: black;background-image: none;">
-      <div class="CopyrightContainer">
-        <label>
-          Copyright © 2024 测盟汇 Inc. All rights reserved.
-        </label>
-      </div>
-    </el-footer>
+
+
+<!--    <el-footer style="border-top: 1px solid #eee;height: 30px;background: black;background-image: none;">-->
+<!--      <div class="CopyrightContainer">-->
+<!--        <label>-->
+<!--          Copyright © 2024 测盟汇 Inc. All rights reserved.-->
+<!--        </label>-->
+<!--      </div>-->
+<!--    </el-footer>-->
   </el-container>
 
 
@@ -523,50 +434,23 @@ export default {
   },
 
   methods: {
-    logout() {
-      // router.push("/login");
-      //安全退出当前账号
-      axios.get("http://localhost:8080/user/logout").then(
-          res => {
-            if (res.status === 200) {
-              router.push("/basicView")
-            }
-          }
-      );
+
+    //  上传图片这部分得看element-plus文档
+    handleAvatarSuccess(res, file) {
+      // this.imageUrl = URL.createObjectURL(file.raw);
     },
-    toUserMessage() {
-      router.push({path: "/userMessageView"});
+    beforeAvatarUpload(file: File) {
+      // const isJPG = file.type === 'image/jpeg';
+      // const isLt2M = file.size / 1024 / 1024 < 2;
+      //
+      // if (!isJPG) {
+      //   ElMessage({message: '上传头像图片只能是 JPG 格式!', type: "warning"});
+      // }
+      // if (!isLt2M) {
+      //   ElMessage({message: '上传头像图片大小不能超过 2MB!', type: "warning"});
+      // }
+      // return isJPG && isLt2M;
     },
-    handleSelectIndex(index: string) {
-      this.nowIndex = index;
-      if (index == "0") {
-        router.push("/mainView");
-      } else if (index === "1") {
-
-      } else if (index === "2") {
-
-      } else if (index === "3") {
-
-      } else if (index === "4") {
-
-      }
-    },
-    //上传图片这部分得看element-plus文档
-    // handleAvatarSuccess(res, file) {
-    //   this.imageUrl = URL.createObjectURL(file.raw);
-    // },
-    // beforeAvatarUpload(file: File) {
-    //   const isJPG = file.type === 'image/jpeg';
-    //   const isLt2M = file.size / 1024 / 1024 < 2;
-    //
-    //   if (!isJPG) {
-    //     ElMessage({message: '上传头像图片只能是 JPG 格式!', type: "warning"});
-    //   }
-    //   if (!isLt2M) {
-    //     ElMessage({message: '上传头像图片大小不能超过 2MB!', type: "warning"});
-    //   }
-    //   return isJPG && isLt2M;
-    // },
     handleSelectionChange(val: Conference[]) {
       this.multipleSelection = val;
       // console.log(this.multipleSelection);

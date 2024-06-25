@@ -16,7 +16,7 @@
               <div style="margin-left: 15px;margin-top: -9px">
               <el-dropdown @command="handleCommand" >
                 <span class="el-dropdown-link" >
-                  <el-avatar :icon="UserFilled" />
+                  <el-avatar :icon="UserFilled" style="height: 40px; width: 40px; " />
                 </span>
                 <template #dropdown>
                   <el-dropdown-menu >
