@@ -65,7 +65,7 @@
 </style>
 <script   lang="ts" >
 import router from "@/router";
-import MessageItem from "@/components/item/messageItem.vue";
+import MessageItem from "@/components/diyComponents/messageItem.vue";
 import { ArrowLeft } from '@element-plus/icons-vue'
 import {loadingData,uploadFile} from "@/utilTs/util";
 import type {USERDATA} from "@/utilTs/util";
@@ -83,8 +83,6 @@ const emitter = mitt()
 export default {
   components: {MessageItem},
   // 组合式API部分，存放非数据变量
-
-
   setup() {
     const defaultUrl=ref(defaultAvatar);
     //

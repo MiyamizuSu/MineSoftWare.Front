@@ -1,9 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
-import loginVue from "@/components/pages/login_View.vue";
-import main_NoL_View from "@/components/pages/main_NoL_View.vue";
-import main_View from "@/components/pages/main_View.vue";
-import userMessage_View from "@/components/pages/userMessage_View.vue";
-import ConferenceManagement from "@/components/pages/ConferenceManagement.vue";
+import loginVue from "@/components/pages/Login_View.vue";
+import main_NoL_View from "@/components/pages/Main_NoL_View.vue";
+import main_View from "@/components/pages/Main_View.vue";
+import userMessage_View from "@/components/pages/UserMessage_View.vue";
+import ConferenceManagement from "@/components/subPages/ConferenceManagement.vue";
+import CourseManagement from "@/components/subPages/CourseManagement.vue";
 
 const routes = [
     {
@@ -20,7 +21,11 @@ const routes = [
         children: [
             {
                 path: "conferenceManagement",
-                component: ConferenceManagement
+                component: ConferenceManagement,
+            },
+            {
+                path: "courseManagement",
+                component: CourseManagement,
             }
         ]
     },
@@ -28,11 +33,6 @@ const routes = [
         path: "/userMessageView",
         component: userMessage_View
     },
-    {
-        path: "/conferenceManagement",
-        component: ConferenceManagement
-    },
-
     {
         path: "/",
         redirect: "/basicView"
