@@ -53,8 +53,8 @@
                 :picker-options="pickerOptions">
             </el-date-picker>
 
-            <el-button type="primary"  icon="Search"  @click="search" style="font-size: 13px; margin-left: 20px;">搜索</el-button>
-            <el-button type="info"  icon="Refresh"  @click="resetSearch" style="font-size: 13px; margin-left: 20px;">重置</el-button>
+            <el-button type="primary" plain icon="Search"  @click="search" style="font-size: 14px; margin-left: 20px;">搜索</el-button>
+            <el-button type="info" plain icon="Refresh"  @click="resetSearch" style="font-size: 14px; margin-left: 20px;">重置</el-button>
           </div>
 
           <!-- 一排按钮 -->
@@ -62,7 +62,7 @@
             <el-button type="primary" plain icon="Plus"  @click="start_addConference" style="font-size: 13px; margin: 5px; width: 70px; text-align: center;">新增</el-button>
             <el-button type="success" plain icon="Edit"  @click="start_updateConference(selectedConference)"  style="font-size: 13px; margin: 5px; width: 70px; text-align: center;">修改</el-button>
             <el-button type="danger" plain icon="Delete"  @click="deleteSelectedConferences"  style="font-size: 13px; margin: 5px; width: 70px; text-align: center;">删除</el-button>
-            <el-button type="warning" plain icon="Download"  @click=""  style="font-size: 13px; margin: 5px; width: 70px; text-align: center;">导出</el-button>
+            <el-button type="warning" plain icon="Download"  @click="onBatchExport"  style="font-size: 13px; margin: 5px; width: 70px; text-align: center;">导出</el-button>
           </p>
 
           <el-table
@@ -71,53 +71,66 @@
               style="width: 100%; "
               @selection-change="handleSelectionChange"
               @select="handleSelect"
+              id="conference_table"
           >
             <el-table-column type="selection"  label="选择">
             </el-table-column>
-            <el-table-column
-                prop="conferenceId"
-                label="会议编号"
-                width="80"
-                style="text-align: center;">
-            </el-table-column>
+<!--            <el-table-column-->
+<!--                prop="conferenceId"-->
+<!--                label="会议编号"-->
+<!--                width="80"-->
+<!--                style="text-align: center;">-->
+<!--            </el-table-column>-->
             <el-table-column
                 prop="conferenceName"
                 label="会议名称"
-                width="220"
+                width="180"
                 style="text-align: center;">
             </el-table-column>
             <el-table-column
                 prop="creator"
                 label="创建人"
-                width="220">
+                width="160">
             </el-table-column>
             <el-table-column
                 prop="state"
                 label="会议状态"
-                width="130">
+                width="90">
             </el-table-column>
             <el-table-column
                 prop="content"
                 label="会议内容"
-                width="280">
+                width="260">
             </el-table-column>
 
             <el-table-column
                 prop="beginTime"
                 label="开始时间"
-                width="180">
+                width="140">
+            </el-table-column>
+            <el-table-column
+                prop="endTime"
+                label="结束时间"
+                width="140">
             </el-table-column>
 
             <el-table-column
-                label="修改信息" width="90">
+                label="会议封面"
+                >
+                <template #default="scope">
+                  <img :src="scope.row.imgUrl" style="height: 80px; max-width: 130px; margin-right: 0;" />
+                </template>
+            </el-table-column>
+            <el-table-column
+                label="修改" width="90">
               <template #default="scope">
                 <!--                  <i class="Edit" style="font-size: 14px; color: #007bff" @click="start_updateConference(scope.row)"> 修改</i>-->
                 <label @click="start_updateConference(scope.row)"
-                       style="font-size: 15px; color: #007bff"><el-icon> <Edit /> </el-icon> 修改</label>
+                       style="font-size: 15px; color: #007bff" ><el-icon> <Edit /> </el-icon> 修改</label>
               </template>
             </el-table-column>
             <el-table-column
-                label="删除" width="90">
+                label="删除" width="100">
               <template #default="scope">
                 <!--                  <i class="el-icon-delete" style="font-size: 14px; color: red" @click="deleteConference(scope.row)"> 删除</i>-->
                 <label @click="deleteSingleConference(scope.row)"
@@ -178,8 +191,8 @@
               </el-form-item>
 
             </el-form>
-            <div slot="footer" class="dialog-footer" style="text-align: center;">
-              <el-button type="primary" @click="confirm_addConference">确定</el-button>
+            <div slot="footer" class="dialog-footer" style="margin-top: 30px;">
+              <el-button type="primary" @click="confirm_addConference" style="margin-left: 30%; margin-right: 20px;">确定</el-button>
               <el-button @click="cancel_addConference">取消</el-button>
             </div>
           </el-dialog>
@@ -235,8 +248,8 @@
               </el-form-item>
 
             </el-form>
-            <div slot="footer" class="dialog-footer">
-              <el-button type="primary" @click="confirm_updateConference">确定</el-button>
+            <div slot="footer" class="dialog-footer" style="margin-top: 30px;">
+              <el-button type="primary" @click="confirm_updateConference" style="margin-left: 30%; margin-right: 20px;">确定</el-button>
               <el-button @click="cancel_updateConference">取消</el-button>
             </div>
           </el-dialog>
@@ -276,6 +289,9 @@ import {ref} from "vue";
 import {UserFilled} from "@element-plus/icons-vue";
 import {loadingData, type USERDATA, type Conference, uploadFile} from "@/utilTs/util";
 import mitt from "mitt";
+import FileSaver from 'file-saver';
+import * as XLSX from 'xlsx';
+import table2excel from 'js-table2excel';
 
 axios.defaults.withCredentials =true;
 const emitter = mitt()
@@ -395,7 +411,6 @@ export default {
         ],
       },
 
-      imageUrl: "", //
     }
   },
 
@@ -408,9 +423,74 @@ export default {
   },
 
   methods: {
-
-    //  上传图片这部分得看element-plus文档
-
+    //将表格导出为excel文件的方法一
+    exportExcel() {
+      const wb = XLSX.utils.table_to_book(document.getElementById("conference_table"));
+      const wb_out = XLSX.write(wb, {
+        bookType: "xlsx",
+        bookSST: true,
+        type: "array"
+      });
+      try {
+        FileSaver.saveAs(new Blob([wb_out], {
+          type: "application/object-stream"
+        }), "会议列表.xlsx");
+      } catch (e) {
+        console.log(e);
+        console.log(wb_out);
+      }
+      return wb_out;
+    },
+    //将表格导出为excel文件的方法二
+    onBatchExport() {
+      const column = [
+        {
+          title: "会议名称",
+          key: "conferenceName",
+          type: "text",
+          height: 100,
+        },
+        {
+          title: "创建人",
+          key: "creator",
+          type: "text",
+          height: 100,
+        },
+        {
+          title: "会议状态",
+          key: "state",
+          type: "text",
+          height: 100,
+        },
+        {
+          title: "会议内容",
+          key: "content",
+          type: "text",
+          height: 100,
+        },
+        {
+          title: "开始时间",
+          key: "beginTime",
+          type: "text",
+          height: 100,
+        },
+        {
+          title: "结束时间",
+          key: "endTime",
+          type: "text",
+          height: 100,
+        },
+        {
+          title: "会议封面",
+          key: "imgUrl",
+          type: "image",
+          width: 100,
+          height: 100,
+        }
+      ];
+      const exportData = JSON.parse(JSON.stringify(this.tableData));
+      table2excel(column, exportData, "会议列表");
+    },
     handleSelectionChange(val: Conference[]) {
       this.multipleSelection = val;
       // console.log(this.multipleSelection);
@@ -536,7 +616,7 @@ export default {
     },
     deleteSingleConference(conference: Conference) {
       ElMessageBox.confirm(
-          `确认要删除会议管理编号为 ${conference.conferenceId} 的会议数据项吗？`,
+          `确认要删除会议名称为[ ${conference.conferenceName} ]的会议数据项吗？`,
           '系统提示',
           {
             confirmButtonText: '确认',
@@ -579,7 +659,7 @@ export default {
             conferenceId: conference.conferenceId
           }).then(res => {
             if (res.data.isOk) {
-              console.log(`编号为${conference.conferenceId}的会议已被删除.`);
+              console.log(`会议名称为${conference.conferenceName}的会议已被删除.`);
               n -= 1;
               //全删除完成后更新会议列表数据，注意下面语句要放到正确的位置
               if (n == 0) {
