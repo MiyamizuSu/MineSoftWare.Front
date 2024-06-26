@@ -11,7 +11,7 @@
       </el-page-header>
       <el-main style="height: 903px">
         <div style="display: inline-flex">
-          <div style="margin-right: -10px;z-index: 100;margin-left: 25%;margin-top:5%">
+          <div style="margin-right: -10px;z-index: 100;margin-left: 17%;margin-top:5%">
             <el-card class="box-card" style="height: 700px;width: 700px">
               <img :src="userData.imgUrl" style="object-fit: cover;max-width: 95%;max-height: 60% "/>
               <el-upload :http-request="httpRequest" style="margin-left:40%" show-file-list :crossorigin="'use-credentials'">
@@ -41,7 +41,7 @@
                 <message-item type="创建日期" :data="userData.startTime" ></message-item>
               </div>
               <template #footer>
-                <el-button size="large" style="margin-left: 90%"  @click="uploadMessage" >
+                <el-button size="large" type="success" style="margin-left: 45%"  @click="uploadMessage" >
                   确认
                 </el-button>
               </template>

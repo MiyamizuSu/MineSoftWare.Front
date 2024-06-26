@@ -298,7 +298,6 @@ export default {
   },
   data() {
     return {
-      // currentUserId: -1,
       currentUser: <USERDATA>{
         userName: "",
         userRealName: "",
@@ -582,13 +581,14 @@ export default {
             if (res.data.isOk) {
               console.log(`编号为${conference.conferenceId}的会议已被删除.`);
               n -= 1;
+              //全删除完成后更新会议列表数据，注意下面语句要放到正确的位置
+              if (n == 0) {
+                this.loadConferences();
+                ElMessage({message: "删除成功", type: "success"});
+              }
+
             }
           });
-          //全删除完成后更新会议列表数据
-          if (n == 0) {
-            this.loadConferences();
-            ElMessage({message: "删除成功", type: "success"});
-          }
         }
       }).catch(() => { //取消
         ElMessage({message: "已取消删除~", type: "info"});
