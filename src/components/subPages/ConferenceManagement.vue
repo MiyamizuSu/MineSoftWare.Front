@@ -34,7 +34,7 @@
   <el-container>
         <el-main>
           <!-- 搜索框 -->
-          <div >
+          <div style="margin-top: 0;">
             <label style="font-size: 14px; font-weight: bolder;">会议名称</label>
             <el-input placeholder="请输入会议名称"   type="text" v-model="search_conferenceName"
                       style="width: 160px; margin-left: 15px; margin-right: 60px; font-size: 14px;"></el-input>
@@ -66,8 +66,8 @@
           </p>
 
           <el-table
-              v-bind:data="tableData"
-              height="550px"
+              v-bind:data="showData"
+              height="590px"
               style="width: 100%; "
               @selection-change="handleSelectionChange"
               @select="handleSelect"
@@ -115,33 +115,25 @@
             </el-table-column>
 
             <el-table-column
-                label="会议封面"
-                >
+                label="会议封面">
                 <template #default="scope">
                   <img :src="scope.row.imgUrl" style="height: 80px; max-width: 130px; margin-right: 0;" />
                 </template>
             </el-table-column>
-            <el-table-column
-                label="修改" width="90">
+            <el-table-column label="操作" width="180">
               <template #default="scope">
-                <!--                  <i class="Edit" style="font-size: 14px; color: #007bff" @click="start_updateConference(scope.row)"> 修改</i>-->
                 <label @click="start_updateConference(scope.row)"
-                       style="font-size: 15px; color: #007bff" ><el-icon> <Edit /> </el-icon> 修改</label>
-              </template>
-            </el-table-column>
-            <el-table-column
-                label="删除" width="100">
-              <template #default="scope">
-                <!--                  <i class="el-icon-delete" style="font-size: 14px; color: red" @click="deleteConference(scope.row)"> 删除</i>-->
+                       style="font-size: 15px; color: #007bff; margin-left: -10px; margin-right: 30px;" ><el-icon> <Edit /> </el-icon> 修改</label>
                 <label @click="deleteSingleConference(scope.row)"
                        style="font-size: 15px; color: red"><el-icon> <Delete /> </el-icon> 删除</label>
               </template>
             </el-table-column>
 
+
           </el-table>
 
           <el-dialog v-model="addConference_dialogFormVisible" title="添加会议" style="width: 80%; height: 750px; overflow-y: auto;"
-                     v-bind:before-close="handle_dialogClose">
+                     v-bind:before-close="handle_dialogClose" draggable>
             <el-form :model="add_conferenceForm" :rules="add_conferenceRules">
               <el-form-item label="会议名称" prop="conferenceName" label-width="120px">
                 <el-input type="text" v-model="add_conferenceForm.conferenceName" placeholder="请输入会议名称" autocomplete="off" ></el-input>
@@ -198,7 +190,7 @@
           </el-dialog>
 
           <el-dialog title="修改会议" v-model="updateConference_dialogFormVisible"  style="width: 80%; height: 750px; overflow-y: auto;"
-          >
+                     draggable :before-close="handle_dialogClose">
             <el-form :model="edit_conferenceForm" :rules="add_conferenceRules">
               <el-form-item label="会议名称" prop="conferenceName" label-width="120px">
                 <el-input type="text" v-model="edit_conferenceForm.conferenceName" placeholder="请输入会议名称" autocomplete="off" ></el-input>
@@ -255,30 +247,23 @@
           </el-dialog>
 
           <el-pagination style="margin-left: 550px; margin-top: 50px;"
-                         @size-change="handleSizeChange"
-                         @current-change="handleCurrentChange"
-                         :current-page="1"
-                         :page-sizes="[5, 10, 30, 40]"
-                         layout="total, sizes, prev, pager, next, jumper"
-                         :total="64">
+                     :current-page="currentPage"
+                     :page-sizes="[5, 10, 15, 20]"
+                     :default-page-size="pageSize"
+                     @update:page-size="handleSizeChange"
+                     @update:current-page="handleCurrentChange"
+                     layout="total, sizes, prev, pager, next, jumper"
+                     :total="this.tableData.length"
+                      background
+                      pager-count="6"
+                    >
           </el-pagination>
 
 
-
         </el-main>
-
-
-<!--    <el-footer style="border-top: 1px solid #eee;height: 30px;background: black;background-image: none;">-->
-<!--      <div class="CopyrightContainer">-->
-<!--        <label>-->
-<!--          Copyright © 2024 测盟汇 Inc. All rights reserved.-->
-<!--        </label>-->
-<!--      </div>-->
-<!--    </el-footer>-->
   </el-container>
-
-
 </template>
+
 
 <script lang="ts">
 import axios from "axios";
@@ -308,8 +293,32 @@ export default {
       })
     };
 
+    const pickerOptions = {
+      shortcuts: [{
+        text: '今天',
+        onClick(picker: any) {
+          picker.$emit('pick', new Date());
+        }
+      }, {
+        text: '昨天',
+        onClick(picker: any) {
+          const date = new Date();
+          date.setTime(date.getTime() - 3600 * 1000 * 24);
+          picker.$emit('pick', date);
+        }
+      }, {
+        text: '一周前',
+        onClick(picker: any) {
+          const date = new Date();
+          date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+          picker.$emit('pick', date);
+        }
+      }]
+    };
+
     return {
-      UserFilled, nowIndex, httpRequest
+      UserFilled, nowIndex, httpRequest,
+      pickerOptions,
     }
   },
   data() {
@@ -326,33 +335,30 @@ export default {
         startTime: "",
       },
       default_imgUrl: "https://www.keaitupian.cn/cjpic/frombd/1/253/3323801689/1232602040.jpg",
+
       search_conferenceName: "",
       search_creator: "",
       search_beginTime: '',
-      pickerOptions: {
-        shortcuts: [{
-          text: '今天',
-          onClick(picker: any) {
-            picker.$emit('pick', new Date());
-          }
-        }, {
-          text: '昨天',
-          onClick(picker: any) {
-            const date = new Date();
-            date.setTime(date.getTime() - 3600 * 1000 * 24);
-            picker.$emit('pick', date);
-          }
-        }, {
-          text: '一周前',
-          onClick(picker: any) {
-            const date = new Date();
-            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
-            picker.$emit('pick', date);
-          }
-        }]
-      },
       uploadUrl: "", //当前向图床上传图片所获得的url
 
+      conferenceList: <Conference[]>[],
+      tableData: <Conference[]>[],
+      showData: <Conference[]>[],
+      //实现分页所需数据
+      currentPage: 1,
+      pageSize: 5,
+
+      multipleSelection: <Conference[]>[],
+      selectedConference: <Conference>{
+        conferenceId: -1,
+        conferenceName: "",
+        creator: "",
+        state: "", //会议状态：进行中 / 已结束
+        content: "",
+        beginTime: "",
+        endTime: "",
+        imgUrl: "",
+      },
       addConference_dialogFormVisible: false,
       add_conferenceForm: <Conference>{
         conferenceId: -1,
@@ -366,21 +372,6 @@ export default {
       },
       updateConference_dialogFormVisible: false,
       edit_conferenceForm: <Conference>{
-        conferenceId: -1,
-        conferenceName: "",
-        creator: "",
-        state: "", //会议状态：进行中 / 已结束
-        content: "",
-        beginTime: "",
-        endTime: "",
-        imgUrl: "",
-      },
-      tableData: <Conference[]>[],
-      multipleSelection: <Conference[]>[],
-      conferenceList: <Conference[]>[
-
-      ],
-      selectedConference: <Conference>{
         conferenceId: -1,
         conferenceName: "",
         creator: "",
@@ -423,6 +414,27 @@ export default {
   },
 
   methods: {
+    handleSizeChange(val: number) {
+      this.pageSize = val;
+      this.load_showData();
+      // ElMessage({message: `pageSize更改为 ${this.pageSize}`, type: "info"});
+    },
+    handleCurrentChange(val: number) {
+      this.currentPage = val;
+      this.load_showData();
+      ElMessage({message: `当前页: ${this.currentPage}`, type: "info"});
+    },
+    load_showData() {
+      let res = [];
+      for (let i=(this.currentPage - 1) * this.pageSize; i<this.tableData.length && i<this.currentPage * this.pageSize; i++) {
+        res.push(this.tableData[i]);
+      }
+      this.showData = res;
+      // this.showData = this.tableData.filter((item, index) => index >= (this.currentPage - 1) * this.pageSize
+      //     && index < this.currentPage * this.pageSize);
+      console.log("当前的showData：");
+      console.log(this.showData);
+    },
     //将表格导出为excel文件的方法一
     exportExcel() {
       const wb = XLSX.utils.table_to_book(document.getElementById("conference_table"));
@@ -480,13 +492,13 @@ export default {
           type: "text",
           height: 100,
         },
-        {
-          title: "会议封面",
-          key: "imgUrl",
-          type: "image",
-          width: 100,
-          height: 100,
-        }
+        // {
+        //   title: "会议封面",
+        //   key: "imgUrl",
+        //   type: "image",
+        //   width: 100,
+        //   height: 100,
+        // }
       ];
       const exportData = JSON.parse(JSON.stringify(this.tableData));
       table2excel(column, exportData, "会议列表");
@@ -507,12 +519,14 @@ export default {
         this.tableData = this.conferenceList.filter((conference) => conference.conferenceName.includes(this.search_conferenceName)
             && conference.creator.includes(this.search_creator));
       }
+      this.load_showData();
     },
     resetSearch() {
       this.search_conferenceName = "";
       this.search_creator = "";
       this.search_beginTime = "";
       this.tableData = this.conferenceList;
+      this.load_showData();
     },
     start_addConference() {
       this.addConference_dialogFormVisible = true;
@@ -674,13 +688,6 @@ export default {
         ElMessage({message: "已取消删除~", type: "info"});
       });
     },
-
-    handleSizeChange(val: number) {
-      ElMessage({message: `每页 ${val}条`, type: "info"});
-    },
-    handleCurrentChange(val: number) {
-      ElMessage({message: `当前页: ${val}`, type: "info"});
-    },
     //
     loadUser() {
       axios.get("http://localhost:8080/user/loading").then(
@@ -709,6 +716,7 @@ export default {
               console.log("从后端加载的conferenceList: ");
               console.log(this.conferenceList);
               this.tableData = this.conferenceList;
+              this.load_showData(); //别忘了
             }
           }
       )
