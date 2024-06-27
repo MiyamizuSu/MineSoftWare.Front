@@ -120,7 +120,7 @@
                   <img :src="scope.row.imgUrl" style="height: 80px; max-width: 130px; margin-right: 0;" />
                 </template>
             </el-table-column>
-            <el-table-column label="操作" width="180">
+            <el-table-column label="操作" width="180" fixed="right">
               <template #default="scope">
                 <label @click="start_updateConference(scope.row)"
                        style="font-size: 15px; color: #007bff; margin-left: -10px; margin-right: 30px;" ><el-icon> <Edit /> </el-icon> 修改</label>
@@ -253,9 +253,8 @@
                      @update:page-size="handleSizeChange"
                      @update:current-page="handleCurrentChange"
                      layout="total, sizes, prev, pager, next, jumper"
-                     :total="this.tableData.length"
+                     :total="tableData.length"
                       background
-                      pager-count="6"
                     >
           </el-pagination>
 
@@ -358,6 +357,7 @@ export default {
         beginTime: "",
         endTime: "",
         imgUrl: "",
+        belongedCompany: ""
       },
       addConference_dialogFormVisible: false,
       add_conferenceForm: <Conference>{
@@ -369,6 +369,7 @@ export default {
         beginTime: "",
         endTime: "",
         imgUrl: "",
+        belongedCompany: ""
       },
       updateConference_dialogFormVisible: false,
       edit_conferenceForm: <Conference>{
@@ -380,6 +381,7 @@ export default {
         beginTime: "",
         endTime: "",
         imgUrl: "",
+        belongedCompany: ""
       },
       add_conferenceRules: {
         conferenceName: [
@@ -407,8 +409,10 @@ export default {
 
   mounted() {
     // const route = useRoute();
-    this.loadUser();
-    this.loadConferences();
+    // this.loadUser();
+    // this.loadConferences();
+    this.loadData();
+
     //规定针对事件信号的响应机制(handler)，
     emitter.on('urlChange', e => this.uploadUrl=e as string )
   },
@@ -492,6 +496,12 @@ export default {
           type: "text",
           height: 100,
         },
+        {
+          title: "所属企业",
+          key: "belongedCompany",
+          type: "text",
+          height: 100,
+        }
         // {
         //   title: "会议封面",
         //   key: "imgUrl",
@@ -529,8 +539,13 @@ export default {
       this.load_showData();
     },
     start_addConference() {
+      if (this.currentUser.userType == 2) {
+        ElMessage({message: "您是系统管理员，不属于某一企业，不能新增会议哦~", type: "warning"});
+        return;
+      }
+      this.add_conferenceForm.belongedCompany = this.currentUser.belongCompany;
+
       this.addConference_dialogFormVisible = true;
-      // ElMessage({message: "新增按钮被点击了！", type: "info"});
     },
     cancel_addConference() {
       this.addConference_dialogFormVisible = false;
@@ -584,6 +599,8 @@ export default {
       this.edit_conferenceForm.beginTime = conference.beginTime;
       this.edit_conferenceForm.endTime = conference.endTime;
       this.edit_conferenceForm.state = conference.state;
+
+      this.edit_conferenceForm.belongedCompany = this.currentUser.belongCompany;
       this.updateConference_dialogFormVisible = true;
     },
     cancel_updateConference() {
@@ -689,7 +706,59 @@ export default {
       });
     },
     //
-    loadUser() {
+    // loadUser() {
+    //   axios.get("http://localhost:8080/user/loading").then(
+    //       res => {
+    //         if (res.data.userData != null) {
+    //           this.currentUser = res.data.userData;
+    //           // ElMessage({message: "通过session登录成功！", type: "success"});
+    //           console.log("从后端加载的当前session中的user：");
+    //           console.log(this.currentUser);
+    //           if (this.currentUser.imgUrl==null || this.currentUser.imgUrl=="") {
+    //             this.currentUser.imgUrl = this.default_imgUrl;
+    //           }
+    //         }
+    //         else {
+    //           ElMessage({message: res.data.msg, type: "warning"});
+    //         }
+    //       }
+    //   );
+    //
+    // },
+    loadConferences() { //重新从数据库中加载会议列表数据
+      //根据当前用户类型来加载会议
+      if (this.currentUser.userType == 2) { //超级管理员可以管理所有会议
+        axios.get("http://localhost:8080/conference/listAll").then(
+            res => {
+              if (res.data.conferenceList != null) {
+                this.conferenceList = res.data.conferenceList;
+                console.log("从后端加载的conferenceList: ");
+                console.log(this.conferenceList);
+                this.tableData = this.conferenceList;
+                this.load_showData(); //别忘了
+              }
+            }
+        );
+      }
+      else {
+        axios.post("http://localhost:8080/conference/listByCompany", {
+          companyName: this.currentUser.belongCompany
+        }).then(res => {
+          if (res.data.conferenceList != null) {
+            this.conferenceList = res.data.conferenceList;
+            console.log("从后端加载的conferenceList: ");
+            console.log(this.conferenceList);
+            this.tableData = this.conferenceList;
+            this.load_showData(); //别忘了
+          }
+          else {
+            ElMessage({message: "发生了未知的错误", type: "warning"});
+          }
+        });
+      }
+    },
+    //加载会议需要先判断当前用户类型，为了保证执行顺序，要写在一起
+    loadData() {
       axios.get("http://localhost:8080/user/loading").then(
           res => {
             if (res.data.userData != null) {
@@ -700,26 +769,14 @@ export default {
               if (this.currentUser.imgUrl==null || this.currentUser.imgUrl=="") {
                 this.currentUser.imgUrl = this.default_imgUrl;
               }
+              this.loadConferences();
+
             }
             else {
               ElMessage({message: res.data.msg, type: "warning"});
             }
           }
       );
-
-    },
-    loadConferences() { //重新从数据库中加载会议列表数据
-      axios.get("http://localhost:8080/conference/listAll").then(
-          res => {
-            if (res.data.conferenceList != null) {
-              this.conferenceList = res.data.conferenceList;
-              console.log("从后端加载的conferenceList: ");
-              console.log(this.conferenceList);
-              this.tableData = this.conferenceList;
-              this.load_showData(); //别忘了
-            }
-          }
-      )
     },
     saveUser() {
       axios.post("http://localhost:8080/user/update", this.currentUser).then(

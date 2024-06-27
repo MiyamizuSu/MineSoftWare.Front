@@ -20,7 +20,8 @@ export interface Conference {
     content: string,
     beginTime: string,
     endTime: string,
-    imgUrl: string
+    imgUrl: string,
+    belongedCompany: string
 }
 export const PathNameTable= {
     "/mainView":"主页",
