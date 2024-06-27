@@ -123,7 +123,7 @@
             </el-header>
             <el-main style="padding-top: 0;padding-left: 0">
               <router-view v-slot="{ Component }">
-                <transition name="el-zoom-in-center">
+                <transition name="el-fade-in-linear">
                   <component :is="Component" :key="$route.path" />
                 </transition>
               </router-view>
@@ -276,8 +276,21 @@ computed:{
   // `mounted` 是生命周期钩子，之后我们会讲到
   mounted() {
     loadingData().then((res)=>{
-      this.pathList.push("/mainView")
-      this.userMessage=res;
+      console.log(res)
+      if( res===null){
+        ElMessage({
+          type: "error",
+          message:"会话超时,3秒后返回登录页面",
+          grouping: true,
+        })
+        setTimeout(()=>{
+          router.push("/login")
+        },3000)
+      }
+      else{
+        this.pathList.push("/mainView")
+        this.userMessage=res;
+      }
     })
   }
 }

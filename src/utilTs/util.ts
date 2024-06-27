@@ -23,6 +23,18 @@ export interface Conference {
     imgUrl: string,
     belongedCompany: string
 }
+
+export  interface Course{
+    courseName:string,
+    author:string,
+    imgUrl:string,
+    courseIntroduction:string,
+    courseCompare:string,
+    courseMediaUrl:string,
+    courseCode:string,
+}
+
+
 export const PathNameTable= {
     "/mainView":"主页",
     "/mainView/conferenceManagement":"会议管理",
@@ -50,6 +62,8 @@ export const loadingData = (): Promise<USERDATA> => Axios.post("http://localhost
     console.error(error);
     throw error;
 });
+
+
 
 export const uploadFile = (file:File): Promise<AxiosResponse<any>> => Axios.post("https://picui.cn/api/v1/upload", {
         'file':file

@@ -14,11 +14,9 @@
     "axios": "^1.7.2",
     "element-plus": "^2.7.5",
     "file-saver": "^2.0.5",
-    "js-table2excel": "^1.1.2",
     "mitt": "^3.0.1",
     "vue": "^3.4.21",
-    "vue-router": "^4.3.3",
-    "xlsx": "^0.18.5"
+    "vue-router": "^4.3.3"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.4",
