@@ -16,7 +16,7 @@
               <div style="margin-left: 15px;margin-top: -9px">
               <el-dropdown @command="handleCommand" >
                 <span class="el-dropdown-link" >
-                  <el-avatar :icon="UserFilled" />
+                  <el-avatar :icon="UserFilled" style="height: 40px; width: 40px; " />
                 </span>
                 <template #dropdown>
                   <el-dropdown-menu >
@@ -42,8 +42,9 @@
 import router from "@/router";
 import { UserFilled } from '@element-plus/icons-vue'
 import {useRouter} from "vue-router";
+import axios from "axios";
 
-
+axios.defaults.withCredentials =true;
 
 export default {
   // 组合式API部分，存放非数据变量
