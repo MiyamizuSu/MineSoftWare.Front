@@ -29,6 +29,7 @@
 </style>
 
 <template>
+  <link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">
   <!-- 外围边框部分不用再写,只要写el-main里的部分 -->
   <!--    <img class="bg" src="../images/bg1.jpg" alt="背景">-->
   <el-container>
@@ -133,7 +134,7 @@
           </el-table>
 
           <el-dialog v-model="addConference_dialogFormVisible" title="添加会议" style="width: 80%; height: 750px; overflow-y: auto;"
-                     v-bind:before-close="handle_dialogClose" draggable>
+                     v-bind:before-close="handle_dialogClose" draggable overflow>
             <el-form :model="add_conferenceForm" :rules="add_conferenceRules">
               <el-form-item label="会议名称" prop="conferenceName" label-width="120px">
                 <el-input type="text" v-model="add_conferenceForm.conferenceName" placeholder="请输入会议名称" autocomplete="off" ></el-input>
@@ -156,6 +157,35 @@
                 <el-input type="textarea" v-model="add_conferenceForm.content" :autosize="{ minRows: 5, maxRows: 10}"
                           placeholder="请输入会议内容" style="margin-top: -15px; padding: 0; font-size: 15px;"></el-input>
               </el-form-item>
+
+
+<!--              <div class="editor-container" style="display: block;">-->
+<!--                <div class="editor-toolbar" style="display: flex; height: 100px;">-->
+<!--                  <Toolbar-->
+<!--                      style="display: flex;"-->
+<!--                      :editor="editorRef"-->
+<!--                      :defaultConfig="toolbarConfig"-->
+<!--                      :mode="mode"-->
+<!--                  />-->
+<!--                </div>-->
+<!--                <div class="editor-content">-->
+<!--                  <Editor-->
+<!--                      style="height: 500px; overflow-y: hidden;"-->
+<!--                      v-model="this.add_content_valueHTML"-->
+<!--                      :defaultConfig="editorConfig"-->
+<!--                      :mode="mode"-->
+<!--                      @onCreated="handleEditorCreated"-->
+<!--                      id="add_editor"-->
+<!--                  />-->
+<!--                </div>-->
+<!--              </div>-->
+
+<!--              <div id="editor—wrapper">-->
+<!--                <div id="toolbar-container">&lt;!&ndash; 工具栏 &ndash;&gt;</div>-->
+<!--                <div id="editor-container">&lt;!&ndash; 编辑器 &ndash;&gt;</div>-->
+<!--              </div>-->
+
+
               <el-form-item label="创建人" prop="creator" label-width="120px">
                 <el-input v-model="add_conferenceForm.creator" placeholder="请输入创建人" style="width: 300px;"></el-input>
               </el-form-item>
@@ -190,7 +220,7 @@
           </el-dialog>
 
           <el-dialog title="修改会议" v-model="updateConference_dialogFormVisible"  style="width: 80%; height: 750px; overflow-y: auto;"
-                     draggable :before-close="handle_dialogClose">
+                     draggable  overflow :before-close="handle_dialogClose">
             <el-form :model="edit_conferenceForm" :rules="add_conferenceRules">
               <el-form-item label="会议名称" prop="conferenceName" label-width="120px">
                 <el-input type="text" v-model="edit_conferenceForm.conferenceName" placeholder="请输入会议名称" autocomplete="off" ></el-input>
@@ -269,18 +299,20 @@ import axios from "axios";
 import {ElMessage, type TabsPaneContext, ElMessageBox, type UploadRequestOptions} from "element-plus";
 import router from "@/router";
 import {useRoute} from "vue-router";
-import {ref} from "vue";
 import {UserFilled} from "@element-plus/icons-vue";
 import {loadingData, type USERDATA, type Conference, uploadFile} from "@/utilTs/util";
 import mitt from "mitt";
 import FileSaver from 'file-saver';
 import * as XLSX from 'xlsx';
 import table2excel from 'js-table2excel';
+import { onBeforeUnmount, ref, shallowRef } from 'vue'
+import { Editor, Toolbar,  } from '@wangeditor/editor-for-vue'
 
 axios.defaults.withCredentials =true;
 const emitter = mitt()
 
 export default {
+  components: { Editor, Toolbar },
   setup() {
     // const userType = ref("1")
     const nowIndex = ref("5");
@@ -291,6 +323,63 @@ export default {
         emitter.emit('urlChange',res.data.data.links.url); //发出改变信号，即向图床上传图片获得的url
       })
     };
+
+    // 编辑器实例，必须用 shallowRef
+    const editorRef = shallowRef()
+
+    // 内容 HTML
+    const valueHtml = ref('')
+    const toolbarConfig = {}
+    // const editorConfig = { placeholder: '请输入内容...' }
+
+    // 组件销毁时，也及时销毁编辑器
+    onBeforeUnmount(() => {
+      const editor = editorRef.value
+      if (editor == null) return
+      editor.destroy()
+    })
+
+    const handleEditorCreated = (editorInstance: object) => {
+      editorRef.value = editorInstance // 记录 editor 实例，重要！
+    }
+
+    const editorConfig = {
+      placeholder: 'Type here...',
+      onChange(editor) {
+        const html = editor.getHtml()
+        console.log('editor content', html)
+        // 也可以同步到 <textarea>
+      }
+    }
+
+
+    // const { createEditor, createToolbar } = window.wangEditor
+    //
+    // const editorConfig = {
+    //   placeholder: 'Type here...',
+    //   onChange(editor) {
+    //     const html = editor.getHtml()
+    //     console.log('editor content', html)
+    //     // 也可以同步到 <textarea>
+    //   }
+    // }
+    //
+    // const editor = createEditor({
+    //   selector: '#editor-container',
+    //   html: '<p><br></p>',
+    //   config: editorConfig,
+    //   mode: 'default', // or 'simple'
+    // })
+    //
+    // const toolbarConfig = {}
+    //
+    // const toolbar = createToolbar({
+    //   editor,
+    //   selector: '#toolbar-container',
+    //   config: toolbarConfig,
+    //   mode: 'default', // or 'simple'
+    // })
+
 
     const pickerOptions = {
       shortcuts: [{
@@ -317,6 +406,9 @@ export default {
 
     return {
       UserFilled, nowIndex, httpRequest,
+      editorRef, valueHtml, mode: 'simple', // 或 'default'
+      toolbarConfig, editorConfig,
+      handleEditorCreated,
       pickerOptions,
     }
   },
@@ -371,6 +463,7 @@ export default {
         imgUrl: "",
         belongedCompany: ""
       },
+      add_content_valueHTML: "",
       updateConference_dialogFormVisible: false,
       edit_conferenceForm: <Conference>{
         conferenceId: -1,
@@ -383,6 +476,7 @@ export default {
         imgUrl: "",
         belongedCompany: ""
       },
+      edit_content_valueHTML: "",
       add_conferenceRules: {
         conferenceName: [
           {required: true, message: "请输入会议名称", trigger: "blur"}
@@ -551,6 +645,7 @@ export default {
       this.addConference_dialogFormVisible = false;
     },
     confirm_addConference() {
+      // this.add_conferenceForm.content = document.getElementById("add_editor").txt.text();
       this.add_conferenceForm.imgUrl = this.uploadUrl;
       if (this.add_conferenceForm.conferenceName=="" || this.add_conferenceForm.creator == "" || this.add_conferenceForm.content==""
           || this.add_conferenceForm.beginTime == "" || this.add_conferenceForm.endTime == "") {
