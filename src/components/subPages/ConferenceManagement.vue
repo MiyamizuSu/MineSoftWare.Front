@@ -37,13 +37,32 @@
           <!-- 搜索框 -->
           <div style="margin-top: 0;">
             <label style="font-size: 14px; font-weight: bolder;">会议名称</label>
-            <el-input placeholder="请输入会议名称"   type="text" v-model="search_conferenceName"
-                      style="width: 160px; margin-left: 15px; margin-right: 60px; font-size: 14px;"></el-input>
+<!--            <el-input placeholder="请输入会议名称"   type="text" v-model="search_conferenceName"-->
+<!--                      style="width: 160px; margin-left: 15px; margin-right: 60px; font-size: 14px;" clearable></el-input>-->
+            <el-autocomplete
+                v-model="search_conferenceName"
+                :fetch-suggestions="searchConferenceName_suggestions"
+                value-key="conferenceName"
+                clearable
+                class="inline-input w-50"
+                style="width: 200px; margin-left: 15px; margin-right: 60px; font-size: 14px;"
+                placeholder="请输入会议名称"
+                @select="handleSelectSuggestion"
+            />
 
             <label style="font-size: 14px; font-weight: bolder;">创建人</label>
-            <el-input placeholder="请输入会议创建人"   type="text" v-model="search_creator"
-                      style="width: 160px; margin-left: 15px; margin-right: 60px; font-size: 14px;"></el-input>
-
+<!--            <el-input placeholder="请输入会议创建人"   type="text" v-model="search_creator"-->
+<!--                      style="width: 170px; margin-left: 15px; margin-right: 60px; font-size: 14px;" clearable></el-input>-->
+            <el-autocomplete
+                v-model="search_creator"
+                :fetch-suggestions="searchCreator_suggestions"
+                value-key="creator"
+                clearable
+                class="inline-input w-50"
+                style="width: 170px; margin-left: 15px; margin-right: 60px; font-size: 14px;"
+                placeholder="请输入会议创建人"
+                @select="handleSelectSuggestion"
+            />
             <label style="font-size: 14px; font-weight: bolder; margin-right: 15px;">开始时间</label>
             <el-date-picker
                 v-model="search_beginTime"
@@ -68,7 +87,7 @@
 
           <el-table
               v-bind:data="showData"
-              height="590px"
+              height="550px"
               style="width: 100%; "
               @selection-change="handleSelectionChange"
               @select="handleSelect"
@@ -85,8 +104,10 @@
             <el-table-column
                 prop="conferenceName"
                 label="会议名称"
-                width="180"
-                style="text-align: center;">
+                width="160"
+                style="text-align: center;"
+                show-overflow-tooltip
+            >
             </el-table-column>
             <el-table-column
                 prop="creator"
@@ -101,7 +122,9 @@
             <el-table-column
                 prop="content"
                 label="会议内容"
-                width="260">
+                width="240"
+                show-overflow-tooltip
+            >
             </el-table-column>
 
             <el-table-column
@@ -115,11 +138,16 @@
                 width="140">
             </el-table-column>
 
-            <el-table-column
-                label="会议封面">
-                <template #default="scope">
-                  <img :src="scope.row.imgUrl" style="height: 80px; max-width: 130px; margin-right: 0;" />
-                </template>
+<!--            <el-table-column-->
+<!--                label="会议封面">-->
+<!--                <template #default="scope">-->
+<!--                  <img :src="scope.row.imgUrl" style="height: 80px; max-width: 130px; margin-right: 0;" />-->
+<!--                </template>-->
+<!--            </el-table-column>-->
+            <el-table-column label="详情" width="120" fixed="right">
+              <template #default="scope">
+                <el-button  plain icon="View" @click="start_viewConferenceDetails(scope.row)">详情</el-button>
+              </template>
             </el-table-column>
             <el-table-column label="操作" width="180" fixed="right">
               <template #default="scope">
@@ -137,7 +165,7 @@
                      v-bind:before-close="handle_dialogClose" draggable overflow>
             <el-form :model="add_conferenceForm" :rules="add_conferenceRules">
               <el-form-item label="会议名称" prop="conferenceName" label-width="120px">
-                <el-input type="text" v-model="add_conferenceForm.conferenceName" placeholder="请输入会议名称" autocomplete="off" ></el-input>
+                <el-input type="text" v-model="add_conferenceForm.conferenceName" placeholder="请输入会议名称"  clearable></el-input>
               </el-form-item>
               <el-form-item label="会议封面" prop="imgUrl" label-width="120px">
                 <el-upload
@@ -155,7 +183,7 @@
 
                 <img src="../resource/rich_text_edit.png" style="width: 1153px; margin: 0; padding: 0;">
                 <el-input type="textarea" v-model="add_conferenceForm.content" :autosize="{ minRows: 5, maxRows: 10}"
-                          placeholder="请输入会议内容" style="margin-top: -15px; padding: 0; font-size: 15px;"></el-input>
+                          clearable  placeholder="请输入会议内容" style="margin-top: -15px; padding: 0; font-size: 15px;"></el-input>
               </el-form-item>
 
 
@@ -187,7 +215,7 @@
 
 
               <el-form-item label="创建人" prop="creator" label-width="120px">
-                <el-input v-model="add_conferenceForm.creator" placeholder="请输入创建人" style="width: 300px;"></el-input>
+                <el-input v-model="add_conferenceForm.creator" placeholder="请输入创建人" clearable style="width: 300px;"></el-input>
               </el-form-item>
               <el-form-item label="开始时间" prop="beginTime" label-width="120px">
                 <el-date-picker
@@ -223,7 +251,7 @@
                      draggable  overflow :before-close="handle_dialogClose">
             <el-form :model="edit_conferenceForm" :rules="add_conferenceRules">
               <el-form-item label="会议名称" prop="conferenceName" label-width="120px">
-                <el-input type="text" v-model="edit_conferenceForm.conferenceName" placeholder="请输入会议名称" autocomplete="off" ></el-input>
+                <el-input type="text" v-model="edit_conferenceForm.conferenceName" placeholder="请输入会议名称" clearable ></el-input>
               </el-form-item>
               <el-form-item label="会议封面" prop="imgUrl" label-width="120px">
 
@@ -241,10 +269,10 @@
               <el-form-item label="会议内容" prop="content" label-width="120px">
                 <img src="../resource/rich_text_edit.png" style="width: 1153px; margin: 0; padding: 0;">
                 <el-input type="textarea" v-model="edit_conferenceForm.content" :autosize="{ minRows: 5, maxRows: 10}"
-                          placeholder="请输入会议内容" style="margin-top: -15px; padding: 0; font-size: 15px;"></el-input>
+                          clearable  placeholder="请输入会议内容" style="margin-top: -15px; padding: 0; font-size: 15px;"></el-input>
               </el-form-item>
               <el-form-item label="创建人" prop="creator" label-width="120px">
-                <el-input v-model="edit_conferenceForm.creator" placeholder="请输入创建人" style="width: 300px;"></el-input>
+                <el-input v-model="edit_conferenceForm.creator" placeholder="请输入创建人" clearable style="width: 300px;"></el-input>
               </el-form-item>
               <el-form-item label="开始时间" prop="beginTime" label-width="120px">
                 <el-date-picker
@@ -273,6 +301,44 @@
             <div slot="footer" class="dialog-footer" style="margin-top: 30px;">
               <el-button type="primary" @click="confirm_updateConference" style="margin-left: 30%; margin-right: 20px;">确定</el-button>
               <el-button @click="cancel_updateConference">取消</el-button>
+            </div>
+          </el-dialog>
+
+          <el-dialog title="查看会议详情" v-model="viewDetails_dialogVisible"  style="width: 80%; height: 800px; overflow-y: auto;"
+                     draggable  overflow >
+            <el-card shadow="hover">
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议名称：</label>
+                <label style="font-size: 18px;">{{selectedConference.conferenceName}}</label>
+              </p>
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">创建人：</label>
+                <label style="font-size: 18px;">{{selectedConference.creator}}</label>
+              </p>
+              <p style="margin-top: 40px; margin-bottom: 20px; margin-left: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议封面：</label>
+                <img :src="selectedConference.imgUrl" alt="会议封面" style="height: 300px;  margin-left: 15px;" />
+              </p>
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议内容：</label>
+                <p style="font-size: 17px; margin-left: 15px;">{{selectedConference.content}}</p>
+              </p>
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议开始时间：</label>
+                <label style="font-size: 18px;">{{selectedConference.beginTime}}</label>
+              </p>
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议结束时间：</label>
+                <label style="font-size: 18px;">{{selectedConference.endTime}}</label>
+              </p>
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">所属企业：</label>
+                <label style="font-size: 18px;">{{selectedConference.belongedCompany}}</label>
+              </p>
+
+            </el-card>
+            <div slot="footer" class="dialog-footer" style="margin-top: 30px;">
+              <el-divider> 底部分割线 </el-divider>
             </div>
           </el-dialog>
 
@@ -345,7 +411,7 @@ export default {
 
     const editorConfig = {
       placeholder: 'Type here...',
-      onChange(editor) {
+      onChange(editor: any) {
         const html = editor.getHtml()
         console.log('editor content', html)
         // 也可以同步到 <textarea>
@@ -451,6 +517,8 @@ export default {
         imgUrl: "",
         belongedCompany: ""
       },
+      viewDetails_dialogVisible: false,
+
       addConference_dialogFormVisible: false,
       add_conferenceForm: <Conference>{
         conferenceId: -1,
@@ -512,6 +580,17 @@ export default {
   },
 
   methods: {
+    handleSelectSuggestion(suggestion: Conference) {
+      console.log(suggestion.conferenceName+"在搜索框被选中");
+    },
+    searchConferenceName_suggestions(queryString: string, cb: any) {
+      const results = this.conferenceList.filter((conference) => conference.conferenceName.indexOf(queryString) != -1);
+      cb(results); //通过回调函数返回建议数据
+    },
+    searchCreator_suggestions(queryString: string, cb: any) {
+      const results = this.conferenceList.filter((conference) => conference.creator.indexOf(queryString) != -1);
+      cb(results); //通过回调函数返回建议数据
+    },
     handleSizeChange(val: number) {
       this.pageSize = val;
       this.load_showData();
@@ -632,6 +711,7 @@ export default {
       this.tableData = this.conferenceList;
       this.load_showData();
     },
+
     start_addConference() {
       if (this.currentUser.userType == 2) {
         ElMessage({message: "您是系统管理员，不属于某一企业，不能新增会议哦~", type: "warning"});
@@ -740,6 +820,11 @@ export default {
 
       });
     },
+    start_viewConferenceDetails(conference: Conference) {
+      this.selectedConference = conference;
+      this.viewDetails_dialogVisible = true;
+    },
+
     deleteSingleConference(conference: Conference) {
       ElMessageBox.confirm(
           `确认要删除会议名称为[ ${conference.conferenceName} ]的会议数据项吗？`,
