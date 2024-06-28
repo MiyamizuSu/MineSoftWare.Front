@@ -76,3 +76,17 @@ export const uploadFile = (file:File): Promise<AxiosResponse<any>> => Axios.post
         console.error(error);
         throw error;
     })
+export const getSignatrue= (): Promise<string> =>{
+       return Axios.post("http://localhost:8080/Course/getSignature", {},{
+            withCredentials:true,
+        }).then((res)=>{
+            if (res.status === 200) {
+                return res.data.signature as string
+            }
+            else{
+                return "";
+            }
+        }).catch((error) => {
+            return error;
+        })
+}

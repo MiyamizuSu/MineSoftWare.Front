@@ -1,22 +1,19 @@
 <template>
-  <el-dialog v-model="isAdd" title="添加课程">
+  <el-dialog v-model="isAdd" :title=judgeType draggable>
     <div style="display: flex" >
       <el-text style="white-space:nowrap;"> 课程名称</el-text>
       <el-input placeholder="请输入课程名称" style="margin-left: 2%" v-model="newCourse.courseName"></el-input>
     </div>
     <div style="display: flex;margin-top: 2%" >
       <el-text style="white-space:nowrap;"> 课程封面</el-text>
-      <el-upload :show-file-list="false" list-type="picture-card" :multiple="false" :auto-upload="false">
-          <el-icon><Plus /></el-icon>
-        <img>
-        <template #file="{ file  }">
-          <div>
-            <img class="el-upload-list__item-thumbnail" :src="file.url" alt="" />
-            <span class="el-upload-list__item-actions">
-        </span>
-          </div>
-        </template>
+      <el-upload  :file-list="imgList" :show-file-list="true" list-type="picture-card" :multiple="false" :auto-upload="false" :limit=1 style="margin-left: 2%" :http-request="httpRequest"
+                  ref="uploadRef"
+      >
+          <el-icon v-if="isNeedPlus" ><Plus /></el-icon>
       </el-upload>
+      <el-dialog v-model="isPreview">
+        <img w-full :src="tempUrl" alt="Preview Image" />
+      </el-dialog>
     </div>
     <div style="display: flex;margin-top: 2%"  >
       <el-text style="white-space:nowrap;"> 课程简介</el-text>
@@ -27,14 +24,22 @@
       <el-input placeholder="请输入课程排序" style="margin-left: 2%" v-model="newCourse.courseCompare"></el-input>
     </div>
     <div style="display: flex;margin-top: 2%" >
-      <el-text style="white-space:nowrap;"> 课程视频</el-text>
-      <el-button>
-        选取文件
-      </el-button>
+      <el-text style="white-space:nowrap; "> 课程视频</el-text>
+      <el-upload style="margin-left: 2%" :auto-upload="false" :onchange="changeCallBack" :file-list="videoList"
+                 :http-request="httpRequestV"
+                 ref="uploadRefV"
+      >
+        <template #trigger>
+          <el-button > 选取文件 </el-button>
+        </template>
+      </el-upload>
     </div>
-    <div style="display: flex;margin-top: 5%" >
+    <div style="display: flex;margin-top: 2%" >
       <el-text style="white-space:nowrap;"> 课程作者</el-text>
       <el-input placeholder="请输入课程作者" style="margin-left: 2%" v-model="newCourse.author"></el-input>
+    </div>
+    <div style="display: flex;margin-top: 5%; margin-left: 45%" >
+      <el-button type="primary"  @click="submitMessage()">确认</el-button>
     </div>
   </el-dialog>
   <el-container>
@@ -56,15 +61,15 @@
     </el-header>
     <el-main>
       <div>
-        <el-button type="primary" :icon="Plus"     plain  @click="showAddDialog"> 新增 </el-button>
-        <el-button type="success" :icon="Edit"     plain>  修改 </el-button>
+        <el-button type="primary" :icon="Plus"     plain  @click="showAddDialog('1')"> 新增 </el-button>
+        <el-button type="success" :icon="Edit"     plain @Click="showAddDialog('2')" >  修改 </el-button>
         <el-button type="danger"  :icon="Delete"   plain>  删除 </el-button>
         <el-button type="warning" :icon="Download" plain @click="exportExcel">  导出 </el-button>
       </div>
       <div>
-        <el-table :data="courses" @selection-change="">
+        <el-table :data="courses" @selection-change="selected">
           <el-table-column type="selection"></el-table-column>
-          <el-table-column prop="courseCode" label="课程代号" width="100"  />
+          <el-table-column prop="courseCode" label="课程代号" width="130"  />
           <el-table-column prop="courseName" label="课程名称"  />
           <el-table-column prop="courseIntroduction" label="课程简介" />
           <el-table-column width="200">
@@ -85,65 +90,118 @@
 <style scoped>
 
 </style>
-<script   lang="ts" >
-import { Edit, Search,Refresh,Plus,Delete,Download } from '@element-plus/icons-vue'
-import router from "@/router";
-import {ref} from "vue";
+<script   lang="ts">
+import {Delete, Download, Edit, Plus, Refresh, Search} from '@element-plus/icons-vue'
+import {ref, watch} from "vue";
 import Axios from "axios";
-import {type Course} from "@/utilTs/util"
-import { saveAs } from 'file-saver';
-import type {UploadFile} from "element-plus";
+import {type Course, getSignatrue, uploadFile} from "@/utilTs/util"
+import TcVod from 'vod-js-sdk-v6'
+import {saveAs} from 'file-saver';
+import {
+  ElMessage,
+  type UploadFile,
+  type UploadFiles,
+  type UploadInstance,
+  type UploadRequestOptions,
+  type UploadUserFile
+} from "element-plus";
+import mitt from "mitt";
+
+const emitter = mitt()
 export default {
   // 组合式API部分，存放非数据变量
   setup() {
     const isAdd= ref(false);
-    const  showAddDialog=() : void =>{
-      isAdd.value=true
-    }
-    const dialogImageUrl = ref('')
-    const dialogVisible = ref(false)
+    const isPreview = ref(false)
     const disabled = ref(false)
-
-    const handleRemove = (file: UploadFile) => {
-      console.log(file)
+    const tempUrl=ref("")
+    const isNeedPlus=ref(true)
+    const imgList=ref<UploadUserFile[]>([])
+    const videoList=ref<UploadUserFile[]>([])
+    const uploadRef = ref<UploadInstance>()
+    const uploadRefV = ref<UploadInstance>()
+    const signature=ref("")
+    const imgUrlChanged=ref(false)
+    const videoUrlChanged=ref(false)
+    const editType=ref("1")
+    const canAdd=ref(true)
+    const preview= (e : UploadFile)  =>{
+      tempUrl.value=e.url!
+      isPreview.value=true;
     }
+    const toVod=new TcVod({
+      getSignature: getSignatrue,
+    });
+    const  showAddDialog=(e:string) : void =>{
+      if(e==='2'){
+        if(canAdd.value===true){
+          ElMessage({
+            message:"请至少选择一项",
+            type:"error"
+          })
+        }
+        else{
 
-    const handlePictureCardPreview = (file: UploadFile) => {
-      dialogImageUrl.value = file.url!
-      dialogVisible.value = true
+        }
+      }
+      else{
+        editType.value=e
+        isAdd.value=true
+      }
     }
+    const changeCallBack=(uploadFile: UploadFile, uploadFiles: UploadFiles)=>{
 
-    const handleDownload = (file: UploadFile) => {
-      console.log(file)
+    }
+    const httpRequest=( options: UploadRequestOptions) :void=>{
+      const fileTo=options.file
+      uploadFile(fileTo).then((res)=>{
+        if(res.status === 200){
+          emitter.emit('urlChange',res.data.data.links.url);
+        }
+        else{
+
+        }
+      })
+    }
+    const httpRequestV=( options: UploadRequestOptions) :void=>{
+      const uploader=toVod.upload({
+        mediaFile:options.file
+      })
+      uploader.on('media_progress', function(info) {
+        console.log(info.percent) // 进度
+      })
+      uploader.done().then(function (doneResult) {
+        doneResult.video.url
+        emitter.emit('videoUrlChange',doneResult.video.url);
+      }).catch(function (err) {
+
+      })
+
     }
     return {
-      Search,Refresh,Plus,Edit,Delete,Download,isAdd,showAddDialog,handleRemove,handlePictureCardPreview,handleDownload
+      Search,Refresh,Plus,Edit,Delete,
+      Download,isAdd,showAddDialog,
+      tempUrl,isNeedPlus,isPreview,preview,
+      disabled,imgList,changeCallBack, httpRequest,uploadRef,
+      toVod,videoList,httpRequestV,imgUrlChanged,videoUrlChanged,uploadRefV,editType,canAdd
     }
 
   },
+computed:{
+  judgeType () {
+    if(this.editType=="1"){
+      return "添加课程"
+    }
+    else if ( this.editType==="2"){
+      return "修改课程"
+    }
+  }
+}
+,
   // 选项式API部分，存放实体数据变量
   data() {
     const courses=[] as Course[]
     const newCourse={} as Course
-    courses.push({
-      author:"知更鸟",
-      courseCode:"xy24uxai27",
-      imgUrl:"https://cdn.picui.cn/vip/2024/06/24/66797d4e8295b.png",
-      courseName:"《使一颗心免于哀伤》的歌唱技巧",
-      courseCompare:"????",
-      courseMediaUrl:"https://cdn.picui.cn/vip/2024/06/24/66797d4e8295b.png",
-      courseIntroduction:"银河歌者知更鸟全新专辑《空气蛹INSIDE》正式上线。希望，是一只带有羽毛的东西。它在我的灵魂中筑巢栖息，唱着没有词的歌曲，似乎永远不会停息。",
-    },
-        {
-          author:"景元",
-          courseCode:"jsko2294js",
-          imgUrl:"https://cdn.picui.cn/vip/2024/06/24/66797d4e8295b.png",
-          courseName:"《使一颗心免于控制》的行动技巧",
-          courseCompare:"????",
-          courseMediaUrl:"https://cdn.picui.cn/vip/2024/06/24/66797d4e8295b.png",
-          courseIntroduction:"景元是一名智识命途的雷属性角色。在战斗中景元将召唤「神君」协同作战，施放战技或终结技将为「神君」积累攻击段数。「神君」行动时将根据积累的攻击段数造成伤害并使攻击段数恢复至初始状态。当景元陷入无法战斗状态时【神君】消失。当景元受到控制类负面状态影响时【神君】也无法行动。"
-        },
-    )
     return {
       courses,newCourse
     }
@@ -154,19 +212,89 @@ export default {
         responseType: 'blob',
         withCredentials:true
       }).then((res) => {
-        console.log(res.data.type)
         const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
         saveAs(blob, 'courses.xlsx');
       })
     },
-    insertCourse(){
-      Axios.post
+    submitMessage(){
+      if(this.videoList.length===0&&this.imgList.length!==0){
+        this.videoUrlChanged=true
+        this.uploadRef.submit()
+      }
+      else if(this.videoList.length!==0&&this.imgList.length===0){
+        this.imgUrlChanged=true
+        this.uploadRefV.submit();
+      }
+      else if(this.videoList.length===0&&this.imgList.length===0){
+        console.log(111111111)
+        Axios.post("http://localhost:8080/Course/addNewCourse",this.newCourse).then((res)=>{
+          if(res.status === 200){
+            if(res.data.statusCode==="200"){
+              ElMessage({
+                message:"添加成功",
+                type:"success",
+              })
+              this.imgUrlChanged=false;
+              this.videoUrlChanged=false;
+            }
+          }
+        })
+      }
+      else{
+        this.uploadRef.submit()
+        this.uploadRefV.submit();
+      }
     },
-
+    selected(newSelection : Course[]){
+      console.log(newSelection)
+      if(newSelection.length===0){
+        this.newCourse={} as Course;
+      }
+      else{
+        this.canAdd=false
+        this.newCourse=newSelection[0];
+      }
+    }
   },
   // `mounted` 是生命周期钩子，之后我们会讲到
   mounted() {
-
+    emitter.on("urlChange", e=>{
+      this.newCourse.imgUrl=e as string
+    })
+    emitter.on('videoUrlChange',e=>{
+      this.newCourse.courseMediaUrl=e as string
+    })
+    const handleToback=():void=>{
+      Axios.post("http://localhost:8080/Course/addNewCourse",this.newCourse).then((res)=>{
+        if(res.status === 200){
+          if(res.data.statusCode==="200"){
+            ElMessage({
+              message:"添加成功",
+              type:"success",
+            })
+            this.imgUrlChanged=false;
+            this.videoUrlChanged=false;
+          }
+        }
+      })
+    }
+    watch(()=>this.newCourse.courseMediaUrl, ()=>{
+      this.videoUrlChanged=true;
+      if(this.videoUrlChanged&&this.imgUrlChanged &&this.canAdd ){
+        handleToback()
+      }
+    })
+    watch(()=>this.newCourse.imgUrl, ()=>{
+      this.imgUrlChanged=true;
+      if(this.videoUrlChanged&&this.imgUrlChanged &&this.canAdd){
+        handleToback()
+      }
+    })
+    Axios.post("http://localhost:8080/Course/list",{},{
+      withCredentials:true
+    }).then((res)=>{
+      this.courses=res.data.courses
+    })
   }
 }
 </script>
