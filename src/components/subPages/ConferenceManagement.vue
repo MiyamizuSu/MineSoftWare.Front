@@ -373,7 +373,6 @@ const emitter = mitt()
 export default {
   // components: { Editor, Toolbar},
   setup() {
-    // const userType = ref("1")
     const nowIndex = ref("5");
     const httpRequest =(options: UploadRequestOptions ) : void=>{
       const fileTo=options.file
