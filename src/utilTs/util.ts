@@ -17,7 +17,7 @@ export interface Conference {
     conferenceName: string,
     creator: string,
     state: string, //会议状态：进行中 / 已结束
-    content: string,
+    content: string, //会议内容，存储的是HTML，需要用v-html指令的标签展示
     beginTime: string,
     endTime: string,
     imgUrl: string,
@@ -54,7 +54,7 @@ export const loadingData = (): Promise<USERDATA> => Axios.post("http://localhost
 export const uploadFile = (file:File): Promise<AxiosResponse<any>> => Axios.post("https://picui.cn/api/v1/upload", {
         'file':file
     },{
-    withCredentials:false,
+        withCredentials:false,
         headers:requestHeader
     }).then((res) => {
          return res;
