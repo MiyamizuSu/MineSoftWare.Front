@@ -6,3 +6,6 @@ declare module '*.vue' {
     const component: DefineComponent<{}, {}, any>
     export default component
 }
+declare module "file-saver"
+declare module 'js-table2excel'
+declare module 'xlsx'
