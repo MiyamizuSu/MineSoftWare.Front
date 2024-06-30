@@ -9,3 +9,4 @@ declare module '*.vue' {
 declare module "file-saver"
 declare module 'js-table2excel'
 declare module 'xlsx'
+declare module 'vod-js-sdk-v6'
