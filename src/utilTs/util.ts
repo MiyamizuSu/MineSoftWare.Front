@@ -23,6 +23,17 @@ export interface Conference {
     imgUrl: string,
     belongedCompany: string
 }
+
+export interface Dynamic {
+    dynamicId: number,
+    dynamicTitle: string,
+    dynamicAuthor: string,
+    dynamicIntro: string,
+    imgUrl: string,
+    date: string,
+    dynamicContent: string,
+    company: string
+}
 export const PathNameTable= {
     "/mainView":"主页",
     "/mainView/conferenceManagement":"会议管理",
@@ -62,3 +73,17 @@ export const uploadFile = (file:File): Promise<AxiosResponse<any>> => Axios.post
         console.error(error);
         throw error;
     })
+
+export const getDynamic = (): Promise<Dynamic[]> => Axios.post("http://localhost:8080/dynamic/list", {}, {
+    withCredentials: true
+}).then((res) => {
+    if (res.status === 200) {
+        console.log(res)
+        return res.data.dynamic as Dynamic[];
+    } else {
+        throw new Error();
+    }
+}).catch((error) => {
+    console.error(error);
+    throw error;
+});
