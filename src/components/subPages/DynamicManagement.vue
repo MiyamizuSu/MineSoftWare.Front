@@ -56,6 +56,7 @@
 
     <el-main>
       <div>
+        <el-button type="info" plain icon="Refresh"  @click="resetData" style="font-size: 14px; margin-left: 20px;">重置</el-button>
         <el-button type="primary" :icon="Plus"     plain  @click="showAddForm"> 新增 </el-button>
         <el-button type="success" :icon="Edit"     plain @click="handleEditClick">  修改 </el-button>
         <el-button type="danger"  :icon="Delete"   plain @click="handleBatchDelete">  删除 </el-button>
@@ -253,7 +254,7 @@
           width="800"
           :before-close="editFormClose"
       >
-        <el-form :model="editDynamicForm" :rules="editDynamicFormRules">
+        <el-form :model="editDynamicForm">
           <el-form-item label="新闻标题" prop="editDynamicTitle" label-width="120px">
             <el-input type="text" v-model="editDynamicForm.dynamicTitle" placeholder="请输入新闻标题" autocomplete="off" ></el-input>
           </el-form-item>
@@ -446,18 +447,18 @@ export default {
           {required: true, message:"请输入新闻简介", trigger: "blur"}
         ]
       },
-      editDynamicFormRules:{
-        editDynamicTitle:[
-          {required: true, message:"请输入新闻标题", trigger: "blur"}
-        ],
-        editDynamicContent:[
-          {required: true, message:"请输入新闻内容", trigger: "blur"}
-        ],
-        editDynamicIntro:[
-          {required: true, message:"请输入新闻简介", trigger: "blur"}
-        ]
-        
-      },
+      // editDynamicFormRules:{
+      //   editDynamicTitle:[
+      //     {required: true, message:"请输入新闻标题", trigger: "blur"}
+      //   ],
+      //   editDynamicContent:[
+      //     {required: true, message:"请输入新闻内容", trigger: "blur"}
+      //   ],
+      //   editDynamicIntro:[
+      //     {required: true, message:"请输入新闻简介", trigger: "blur"}
+      //   ]
+      //  
+      // },
       selectedRows: [] as Dynamic[],
     }
   },
@@ -476,14 +477,20 @@ export default {
       this.filterIntro();
       ElMessage({message: `当前页: ${this.currentPage}`, type: "info"});
     },
-    handleSelectionChange(selection) {
+    handleSelectionChange(selection: any) {
       this.selectedRows = selection;
     },
     handleEditClick() {
       if (this.selectedRows.length === 0) {
-        this.$message.warning('请先选择要编辑的新闻');
+        ElMessage({
+          message:"请先选择要编辑的新闻",
+          type:"warning"
+        });
       } else if (this.selectedRows.length > 1) {
-        this.$message.warning('一次只能编辑一条新闻');
+        ElMessage({
+          message:"一次只能选择一个新闻编辑",
+          type:"warning"
+        });
       } else {
         this.showEditForm(this.selectedRows[0]);
       }
@@ -600,6 +607,9 @@ export default {
           }
         });
         this.addDynamicForm = {
+          company: "",
+          date: "",
+          dynamicId: 0,
           dynamicTitle: '',
           dynamicContent: '',
           dynamicAuthor: '',
@@ -625,9 +635,6 @@ export default {
       this.uploadUrl = row.imgUrl;
       this.editDynamicForm.dynamicId = row.dynamicId;
       this.editDynamicForm.dynamicIntro = row.dynamicIntro;
-      this.editDynamicFormRules.editDynamicTitle = this.editDynamicForm.dynamicTitle;
-      this.editDynamicFormRules.editDynamicIntro = this.editDynamicForm.dynamicIntro;
-      this.editDynamicFormRules.editDynamicContent = this.editDynamicForm.dynamicContent;
       this.editFormVisble = true;
     },
     editDynamic(){
@@ -664,30 +671,33 @@ export default {
     handleBatchDelete() {
       const selectedRows = this.selectedRows;
       if (!selectedRows || !selectedRows.length) {
-        this.$message.warning('请选择要删除的新闻');
+        ElMessage({
+          message:"请选择要删除的新闻",
+          type:"warning"
+        });
         return;
       }
 
-      this.$confirm('确定删除选中的新闻吗？', '提示', {
+      ElMessageBox.confirm('确定删除选中的新闻吗？', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         const deletePromises = selectedRows.map(row => this.deleteDynamic(row));
         Promise.all(deletePromises).then(() => {
-          this.$message({
-            type: 'success',
-            message: '删除成功'
-          });
+          // ElMessage({
+          //   message: '删除成功',
+          //   type: 'success',
+          // })
           this.reloadData();
         }).catch(() => {
-          this.$message({
+          ElMessage({
             type: 'error',
             message: '删除失败'
           });
         });
       }).catch(() => {
-        this.$message({
+        ElMessage({
           type: 'info',
           message: '取消删除'
         });
@@ -791,6 +801,9 @@ export default {
       ];
       const exportData = JSON.parse(JSON.stringify(this.tableData));
       tableExcel(column, exportData, "动态列表");
+    },
+    resetData(){
+      emitter.emit('reload');
     }
     
     
