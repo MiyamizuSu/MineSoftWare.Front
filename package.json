@@ -11,11 +11,15 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+    "@vueup/vue-quill": "^1.2.0",
+    "@wangeditor/editor": "^5.1.23",
+    "@wangeditor/editor-for-vue": "^5.1.12",
     "axios": "^1.7.2",
     "element-plus": "^2.7.5",
     "file-saver": "^2.0.5",
     "js-table2excel": "^1.1.2",
     "mitt": "^3.0.1",
+    "quill": "^2.0.2",
     "vue": "^3.4.21",
     "vue-router": "^4.3.3",
     "xlsx": "^0.18.5"
