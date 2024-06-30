@@ -373,7 +373,6 @@ const emitter = mitt()
 export default {
   // components: { Editor, Toolbar},
   setup() {
-    // const userType = ref("1")
     const nowIndex = ref("5");
     const httpRequest =(options: UploadRequestOptions ) : void=>{
       const fileTo=options.file
@@ -489,9 +488,9 @@ export default {
         ],
       },
 
-      selectedQuill: null,
-      quill1: null,
-      quill2: null,
+      selectedQuill: <Quill>null,
+      quill1: <Quill>null,
+      quill2: <Quill>null,
 
     }
   },
@@ -516,7 +515,7 @@ export default {
       console.log("真正的Quill: ")
       console.log(this.selectedQuill);
     },
-    handleUploadImage(e) {
+    handleUploadImage(e: events) {
       const files = Array.prototype.slice.call(e.target.files)
       console.log("files: ", files)
       if (!files) {
@@ -533,7 +532,7 @@ export default {
           console.log(this.quill2)
 
           const range = this.selectedQuill.getSelection();
-          this.selectedQuill.insertEmbed(range?.index, 'image', res.data.data.links.url)
+          this.selectedQuill.insertEmbed(<number>range?.index, 'image', res.data.data.links.url)
           this.selectedQuill.setSelection(range?.index + 1)
           // resolve(res.data.data.links.url);
           console.log("富文本编辑器图片上传成功----")
@@ -604,7 +603,7 @@ export default {
     setContentValue() {
       //好像貌似用不到
     },
-    getPlainTextFromHtml(html) {
+    getPlainTextFromHtml(html: any) {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = html;
       return tempDiv.textContent || tempDiv.innerText || '';

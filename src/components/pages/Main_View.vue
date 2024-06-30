@@ -87,24 +87,32 @@
                   </template>
                 </el-menu-item>
                 <el-menu-item index="2">
+                  <template #title>
+                    <el-icon>
+                      <House/>
+                    </el-icon>
+                    <span>租户管理</span>
+                  </template>
+                </el-menu-item>
+                <el-menu-item index="3">
                   <el-icon>
                     <Connection/>
                   </el-icon>
                   <span>组织管理</span>
                 </el-menu-item>
-                <el-menu-item index="3">
+                <el-menu-item index="4">
                   <el-icon>
                     <MostlyCloudy/>
                   </el-icon>
                   <span>行业动态管理</span>
                 </el-menu-item>
-                <el-menu-item index="4">
+                <el-menu-item index="5">
                   <el-icon>
                     <Notebook/>
                   </el-icon>
                   <span>课程管理</span>
                 </el-menu-item>
-                <el-menu-item index="5">
+                <el-menu-item index="6">
                   <el-icon>
                     <ChatLineRound/>
                   </el-icon>
@@ -123,7 +131,7 @@
             </el-header>
             <el-main style="padding-top: 0;padding-left: 0">
               <router-view v-slot="{ Component }">
-                <transition name="el-zoom-in-center">
+                <transition name="el-fade-in-linear">
                   <component :is="Component" :key="$route.path" />
                 </transition>
               </router-view>
@@ -222,9 +230,16 @@ computed:{
         this.pathList.push("/mainView")
       }
       else if (index === "1") {
-
+        router.push("/mainView/userManagement")
+        this.pathList.splice(0,this.pathList.length);
+        this.pathList.push("/mainView")
+        this.pathList.push("/mainView/userManagement")
       }
       else if (index === "2") {
+        router.push("/mainView/tenantManagement")
+        this.pathList.splice(0,this.pathList.length);
+        this.pathList.push("/mainView")
+        this.pathList.push("/mainView/tenantManagement")
 
       }
       else if (index === "3") {
@@ -234,12 +249,15 @@ computed:{
         this.pathList.push("/mainView/dynamicManagement")
       }
       else if (index === "4") {
+
+}
+      else if (index === "5") {
         router.push("/mainView/courseManagement")
         this.pathList.splice(0,this.pathList.length);
         this.pathList.push("/mainView")
         this.pathList.push("/mainView/courseManagement")
       }
-      else if (index === "5") {
+      else if (index === "6") {
         router.push("/mainView/conferenceManagement")
         this.pathList.splice(0,this.pathList.length);
         this.pathList.push("/mainView")
@@ -279,8 +297,21 @@ computed:{
   // `mounted` 是生命周期钩子，之后我们会讲到
   mounted() {
     loadingData().then((res)=>{
-      this.pathList.push("/mainView")
-      this.userMessage=res;
+      console.log(res)
+      if( res===null){
+        ElMessage({
+          type: "error",
+          message:"会话超时,3秒后返回登录页面",
+          grouping: true,
+        })
+        setTimeout(()=>{
+          router.push("/login")
+        },3000)
+      }
+      else{
+        this.pathList.push("/mainView")
+        this.userMessage=res;
+      }
     })
   }
 }
