@@ -822,7 +822,7 @@ export default {
       emitter.on('urlChange', e => this.uploadUrl=e as string )
     });
     emitter.on('reload',()=>{
-      location.reload()
+      location.reload();
     })
     
   }
