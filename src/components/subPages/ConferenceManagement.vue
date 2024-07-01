@@ -26,6 +26,12 @@
   height: 178px;
   text-align: center;
 }
+/* 控制上传图片所展示的样式 */
+.upload-image {
+  max-width: 550px;
+  height: auto;
+  max-height: 450px;
+}
 </style>
 
 <template>
@@ -302,12 +308,12 @@
               </p>
               <p style="margin-top: 40px; margin-bottom: 20px; margin-left: 20px;">
                 <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议封面：</label>
-                <img :src="selectedConference.imgUrl" alt="会议封面" style="height: 300px;  margin-left: 15px;" />
+                <img :src="selectedConference.imgUrl" alt="会议封面" style="height: 300px;  max-width: 500px; margin-left: 15px;" />
               </p>
               <p style="margin: 20px;">
                 <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议内容：</label>
 <!--                <p style="font-size: 17px; margin-left: 15px;">{{selectedConference.content}}</p>-->
-                <div style="font-size: 17px; margin-left: 15px;" v-html="selectedConference.content"></div>
+                <div style="font-size: 17px; margin-left: 15px; max-width: 300px;" v-html="selectedConference.content"></div>
               </p>
               <p style="margin: 20px;">
                 <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议开始时间：</label>
@@ -366,6 +372,7 @@ import { QuillEditor, Quill } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import * as events from "node:events";
+import Compressor from 'compressorjs';
 
 axios.defaults.withCredentials = true;
 const emitter = mitt()
@@ -489,8 +496,8 @@ export default {
       },
 
       selectedQuill: <Quill>null,
-      quill1: <Quill>null,
-      quill2: <Quill>null,
+      quill1: {} as Quill,
+      quill2: {} as Quill,
 
     }
   },
@@ -515,29 +522,62 @@ export default {
       console.log("真正的Quill: ")
       console.log(this.selectedQuill);
     },
-    handleUploadImage(e: events) {
+    compressImage(file: File) { //压缩图片
+      return new Promise((resolve, reject) => {
+        new Compressor(file, {
+          quality: 0.8, // 设置压缩质量
+          maxWidth: 550, // 设置图片最大宽度
+          maxHeight: 450, // 设置图片最大高度
+          success(result) {
+            resolve(result);
+          },
+          error(error) {
+            reject(error);
+          },
+        });
+      });
+
+    },
+    blobToFile(blob: Blob, fileName: string) {
+      let file: File = new File([blob], fileName, {type: blob.type});
+      return file;
+    },
+    async handleUploadImage(e: events) {
       const files = Array.prototype.slice.call(e.target.files)
-      console.log("files: ", files)
-      if (!files) {
+      // console.log("files: ", files)
+      const file: File = files[0];
+      if (!file) {
         return
       }
-      uploadFile(files[0]).then(res => {
-        if (res.data.data.links.url) {
-          // const quill = toRaw(myQuillEditor.value).getQuill()
-          console.log(111)
-          console.log(this.selectedQuill);
-          console.log("quil1: ");
-          console.log(this.quill1)
-          console.log("quil2: ");
-          console.log(this.quill2)
+      const compressedBlob = await this.compressImage(file); // 压缩图片
+      console.log("compressedBlob: ");
+      console.log(compressedBlob); //Blob类型，与需要的File类型不符
+      const compressedFile = await this.blobToFile(compressedBlob, file.name);
+      uploadFile(compressedFile).then(res => {
+        console.log(res);
+        if (res.data) {
+          if (res.data.data.links.url) {
+            // const quill = toRaw(myQuillEditor.value).getQuill()
+            console.log(111)
+            console.log(this.selectedQuill);
+            console.log("quil1: ");
+            console.log(this.quill1)
+            console.log("quil2: ");
+            console.log(this.quill2)
 
-          const range = this.selectedQuill.getSelection();
-          this.selectedQuill.insertEmbed(<number>range?.index, 'image', res.data.data.links.url)
-          this.selectedQuill.setSelection(range?.index + 1)
-          // resolve(res.data.data.links.url);
-          console.log("富文本编辑器图片上传成功----")
-          console.log(res.data.data.links.url)
+            const range = this.selectedQuill.getSelection();
+            this.selectedQuill.insertEmbed(<number>range?.index, 'image', res.data.data.links.url)
+            const imgElement = this.selectedQuill.root.querySelector(`img[src="${res.data.data.links.url}"]`);
+            if (imgElement) {
+              imgElement.classList.add('upload-image'); //设置样式
+            }
+            this.selectedQuill.setSelection(range?.index + 1)
+            // resolve(res.data.data.links.url);
+            console.log("富文本编辑器图片上传成功----")
+            console.log(res.data.data.links.url)
+          }
         }
+
       })
     },
     imageHandler(quill: Quill) {
@@ -776,6 +816,12 @@ export default {
         if (res.data.statusCode == "200") {
           ElMessage({message: "添加成功！", type: "success"});
           this.loadConferences();
+          this.add_conferenceForm.conferenceName = "";
+          this.add_conferenceForm.creator = "";
+          this.add_conferenceForm.content = "";
+          this.add_conferenceForm.beginTime = "";
+          this.add_conferenceForm.endTime = "";
+
           this.addConference_dialogFormVisible = false;
         }
         else if (res.data.statusCode == "501") {
