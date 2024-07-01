@@ -123,7 +123,7 @@
             </el-header>
             <el-main style="padding-top: 0;padding-left: 0">
               <router-view v-slot="{ Component }">
-                <transition name="el-fade-in-linear">
+                <transition name="el-zoom-in-center">
                   <component :is="Component" :key="$route.path" />
                 </transition>
               </router-view>
@@ -231,7 +231,11 @@ computed:{
 
       }
       else if (index === "4") {
-        router.push("/mainView/courseManagement")
+        router.push(
+            {
+               path: "/mainView/courseManagement",
+               query: { ee: this.userMessage.userType }
+            })
         this.pathList.splice(0,this.pathList.length);
         this.pathList.push("/mainView")
         this.pathList.push("/mainView/courseManagement")

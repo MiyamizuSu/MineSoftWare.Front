@@ -32,6 +32,7 @@ export  interface Course{
     courseCompare:string,
     courseMediaUrl:string,
     courseCode:string,
+    status:string
 }
 
 
@@ -90,3 +91,8 @@ export const getSignatrue= (): Promise<string> =>{
             return error;
         })
 }
+
+export const momoSearch = (before: Course[],query:string) : Course[] => {
+    return before.filter(course => course.courseName.includes(query)) as Course[];
+};
+
