@@ -29,21 +29,36 @@
 </style>
 
 <template>
-  <link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">
-  <!-- 外围边框部分不用再写,只要写el-main里的部分 -->
-  <!--    <img class="bg" src="../images/bg1.jpg" alt="背景">-->
+<!--  <link href="https://unpkg.com/@wangeditor/editor@latest/dist/css/style.css" rel="stylesheet">-->
   <el-container>
         <el-main>
           <!-- 搜索框 -->
           <div style="margin-top: 0;">
             <label style="font-size: 14px; font-weight: bolder;">会议名称</label>
-            <el-input placeholder="请输入会议名称"   type="text" v-model="search_conferenceName"
-                      style="width: 160px; margin-left: 15px; margin-right: 60px; font-size: 14px;"></el-input>
+<!--            <el-input placeholder="请输入会议名称"   type="text" v-model="search_conferenceName"-->
+<!--                      style="width: 160px; margin-left: 15px; margin-right: 60px; font-size: 14px;" clearable></el-input>-->
+            <el-autocomplete
+                v-model="search_conferenceName"
+                :fetch-suggestions="searchConferenceName_suggestions"
+                value-key="conferenceName"
+                clearable
+                class="inline-input w-50"
+                style="width: 200px; margin-left: 15px; margin-right: 60px; font-size: 14px;"
+                placeholder="请输入会议名称"
+                @select="handleSelectSuggestion"
+            />
 
             <label style="font-size: 14px; font-weight: bolder;">创建人</label>
-            <el-input placeholder="请输入会议创建人"   type="text" v-model="search_creator"
-                      style="width: 160px; margin-left: 15px; margin-right: 60px; font-size: 14px;"></el-input>
-
+            <el-autocomplete
+                v-model="search_creator"
+                :fetch-suggestions="searchCreator_suggestions"
+                value-key="creator"
+                clearable
+                class="inline-input w-50"
+                style="width: 170px; margin-left: 15px; margin-right: 60px; font-size: 14px;"
+                placeholder="请输入会议创建人"
+                @select="handleSelectSuggestion"
+            />
             <label style="font-size: 14px; font-weight: bolder; margin-right: 15px;">开始时间</label>
             <el-date-picker
                 v-model="search_beginTime"
@@ -51,7 +66,7 @@
                 value-format="YYYY-MM-DD HH:mm:ss"
                 value-on-clear=""
                 placeholder="选择日期时间"
-                :picker-options="pickerOptions">
+                >
             </el-date-picker>
 
             <el-button type="primary" plain icon="Search"  @click="search" style="font-size: 14px; margin-left: 20px;">搜索</el-button>
@@ -68,7 +83,7 @@
 
           <el-table
               v-bind:data="showData"
-              height="590px"
+              height="550px"
               style="width: 100%; "
               @selection-change="handleSelectionChange"
               @select="handleSelect"
@@ -85,8 +100,10 @@
             <el-table-column
                 prop="conferenceName"
                 label="会议名称"
-                width="180"
-                style="text-align: center;">
+                width="160"
+                style="text-align: center;"
+                show-overflow-tooltip
+            >
             </el-table-column>
             <el-table-column
                 prop="creator"
@@ -99,9 +116,14 @@
                 width="90">
             </el-table-column>
             <el-table-column
-                prop="content"
                 label="会议内容"
-                width="260">
+                width="240"
+                show-overflow-tooltip
+            >
+              <template #default="scope">
+<!--                <div v-html="scope.row.content"></div>-->
+                <label>{{ getPlainTextFromHtml(scope.row.content) }}</label>
+              </template>
             </el-table-column>
 
             <el-table-column
@@ -115,11 +137,16 @@
                 width="140">
             </el-table-column>
 
-            <el-table-column
-                label="会议封面">
-                <template #default="scope">
-                  <img :src="scope.row.imgUrl" style="height: 80px; max-width: 130px; margin-right: 0;" />
-                </template>
+<!--            <el-table-column-->
+<!--                label="会议封面">-->
+<!--                <template #default="scope">-->
+<!--                  <img :src="scope.row.imgUrl" style="height: 80px; max-width: 130px; margin-right: 0;" />-->
+<!--                </template>-->
+<!--            </el-table-column>-->
+            <el-table-column label="会议详情" width="120" fixed="right">
+              <template #default="scope">
+                <el-button  plain icon="View" @click="start_viewConferenceDetails(scope.row)">详情</el-button>
+              </template>
             </el-table-column>
             <el-table-column label="操作" width="180" fixed="right">
               <template #default="scope">
@@ -130,14 +157,13 @@
               </template>
             </el-table-column>
 
-
           </el-table>
 
           <el-dialog v-model="addConference_dialogFormVisible" title="添加会议" style="width: 80%; height: 750px; overflow-y: auto;"
                      v-bind:before-close="handle_dialogClose" draggable overflow>
             <el-form :model="add_conferenceForm" :rules="add_conferenceRules">
               <el-form-item label="会议名称" prop="conferenceName" label-width="120px">
-                <el-input type="text" v-model="add_conferenceForm.conferenceName" placeholder="请输入会议名称" autocomplete="off" ></el-input>
+                <el-input type="text" v-model="add_conferenceForm.conferenceName" placeholder="请输入会议名称"  clearable></el-input>
               </el-form-item>
               <el-form-item label="会议封面" prop="imgUrl" label-width="120px">
                 <el-upload
@@ -151,43 +177,24 @@
                 </el-upload>
               </el-form-item>
               <p style="color: red; margin-top: 0; margin-left: 120px;">请上传大小不超过5MB 格式为png/jpg/jpeg的文件</p>
-              <el-form-item label="会议内容" prop="content" label-width="120px">
+<!--              <el-form-item label="会议内容" prop="content" label-width="120px">-->
+<!--                <img src="../resource/rich_text_edit.png" style="width: 1153px; margin: 0; padding: 0;">-->
+<!--                <el-input type="textarea" v-model="add_conferenceForm.content" :autosize="{ minRows: 5, maxRows: 10}"-->
+<!--                          clearable  placeholder="请输入会议内容" style="margin-top: -15px; padding: 0; font-size: 15px;"></el-input>-->
+<!--              </el-form-item>-->
 
-                <img src="../resource/rich_text_edit.png" style="width: 1153px; margin: 0; padding: 0;">
-                <el-input type="textarea" v-model="add_conferenceForm.content" :autosize="{ minRows: 5, maxRows: 10}"
-                          placeholder="请输入会议内容" style="margin-top: -15px; padding: 0; font-size: 15px;"></el-input>
-              </el-form-item>
-
-
-<!--              <div class="editor-container" style="display: block;">-->
-<!--                <div class="editor-toolbar" style="display: flex; height: 100px;">-->
-<!--                  <Toolbar-->
-<!--                      style="display: flex;"-->
-<!--                      :editor="editorRef"-->
-<!--                      :defaultConfig="toolbarConfig"-->
-<!--                      :mode="mode"-->
-<!--                  />-->
-<!--                </div>-->
-<!--                <div class="editor-content">-->
-<!--                  <Editor-->
-<!--                      style="height: 500px; overflow-y: hidden;"-->
-<!--                      v-model="this.add_content_valueHTML"-->
-<!--                      :defaultConfig="editorConfig"-->
-<!--                      :mode="mode"-->
-<!--                      @onCreated="handleEditorCreated"-->
-<!--                      id="add_editor"-->
-<!--                  />-->
-<!--                </div>-->
-<!--              </div>-->
-
-<!--              <div id="editor—wrapper">-->
-<!--                <div id="toolbar-container">&lt;!&ndash; 工具栏 &ndash;&gt;</div>-->
-<!--                <div id="editor-container">&lt;!&ndash; 编辑器 &ndash;&gt;</div>-->
-<!--              </div>-->
-
+              <p style="width: 120px; font-size: 15px; font-weight: bolder;">会议内容：</p>
+              <QuillEditor
+                  theme="snow" v-model:content="add_conferenceForm.content"
+                  :options="editorOptions2(this)"  contentType="html"
+                  @update:content="setContentValue"
+                  style="margin-top: 5px; margin-bottom: 20px; height: 200px;"
+                  @focus="setFocusQuill"
+                  @ready="onEditorReady2"
+              />
 
               <el-form-item label="创建人" prop="creator" label-width="120px">
-                <el-input v-model="add_conferenceForm.creator" placeholder="请输入创建人" style="width: 300px;"></el-input>
+                <el-input v-model="add_conferenceForm.creator" placeholder="请输入创建人" clearable style="width: 300px;"></el-input>
               </el-form-item>
               <el-form-item label="开始时间" prop="beginTime" label-width="120px">
                 <el-date-picker
@@ -196,7 +203,6 @@
                     placeholder="选择日期时间"
                     value-format="YYYY-MM-DD HH:mm:ss"
                     value-on-clear=""
-                    :picker-options="pickerOptions"
                     style="width: 300px;">
                 </el-date-picker>
               </el-form-item>
@@ -207,7 +213,6 @@
                     placeholder="选择日期时间"
                     value-format="YYYY-MM-DD HH:mm:ss"
                     value-on-clear=""
-                    :picker-options="pickerOptions"
                     style="width: 300px;">
                 </el-date-picker>
               </el-form-item>
@@ -223,7 +228,7 @@
                      draggable  overflow :before-close="handle_dialogClose">
             <el-form :model="edit_conferenceForm" :rules="add_conferenceRules">
               <el-form-item label="会议名称" prop="conferenceName" label-width="120px">
-                <el-input type="text" v-model="edit_conferenceForm.conferenceName" placeholder="请输入会议名称" autocomplete="off" ></el-input>
+                <el-input type="text" v-model="edit_conferenceForm.conferenceName" placeholder="请输入会议名称" clearable ></el-input>
               </el-form-item>
               <el-form-item label="会议封面" prop="imgUrl" label-width="120px">
 
@@ -238,13 +243,22 @@
                 </el-upload>
               </el-form-item>
               <p style="color: red; margin-top: 0; margin-left: 120px;">请上传大小不超过5MB 格式为png/jpg/jpeg的文件</p>
-              <el-form-item label="会议内容" prop="content" label-width="120px">
-                <img src="../resource/rich_text_edit.png" style="width: 1153px; margin: 0; padding: 0;">
-                <el-input type="textarea" v-model="edit_conferenceForm.content" :autosize="{ minRows: 5, maxRows: 10}"
-                          placeholder="请输入会议内容" style="margin-top: -15px; padding: 0; font-size: 15px;"></el-input>
-              </el-form-item>
+<!--              <el-form-item label="会议内容" prop="content" label-width="120px">-->
+<!--                <img src="../resource/rich_text_edit.png" style="width: 1153px; margin: 0; padding: 0;">-->
+<!--                <el-input type="textarea" v-model="edit_conferenceForm.content" :autosize="{ minRows: 5, maxRows: 10}"-->
+<!--                          clearable  placeholder="请输入会议内容" style="margin-top: -15px; padding: 0; font-size: 15px;"></el-input>-->
+<!--              </el-form-item>-->
+              <p style="width: 120px; font-size: 15px; font-weight: bolder;">会议内容：</p>
+              <QuillEditor
+                  theme="snow" v-model:content="edit_conferenceForm.content"
+                  :options="editorOptions1(this)"  contentType="html"
+                  @update:content="setContentValue"
+                 style="margin-top: 5px; margin-bottom: 20px; height: 200px;"
+                  @focus="setFocusQuill"
+                  @ready="onEditorReady1"
+              />
               <el-form-item label="创建人" prop="creator" label-width="120px">
-                <el-input v-model="edit_conferenceForm.creator" placeholder="请输入创建人" style="width: 300px;"></el-input>
+                <el-input v-model="edit_conferenceForm.creator" placeholder="请输入创建人" clearable style="width: 300px;"></el-input>
               </el-form-item>
               <el-form-item label="开始时间" prop="beginTime" label-width="120px">
                 <el-date-picker
@@ -253,7 +267,7 @@
                     placeholder="选择日期时间"
                     value-format="YYYY-MM-DD HH:mm:ss"
                     value-on-clear=""
-                    :picker-options="pickerOptions"
+
                     style="width: 300px;">
                 </el-date-picker>
               </el-form-item>
@@ -264,7 +278,6 @@
                     placeholder="选择日期时间"
                     value-format="YYYY-MM-DD HH:mm:ss"
                     value-on-clear=""
-                    :picker-options="pickerOptions"
                     style="width: 300px;">
                 </el-date-picker>
               </el-form-item>
@@ -275,6 +288,48 @@
               <el-button @click="cancel_updateConference">取消</el-button>
             </div>
           </el-dialog>
+
+          <el-dialog title="查看会议详情" v-model="viewDetails_dialogVisible"  style="width: 80%; height: 800px; overflow-y: auto;"
+                     draggable  overflow >
+            <el-card shadow="hover">
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议名称：</label>
+                <label style="font-size: 18px;">{{selectedConference.conferenceName}}</label>
+              </p>
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">创建人：</label>
+                <label style="font-size: 18px;">{{selectedConference.creator}}</label>
+              </p>
+              <p style="margin-top: 40px; margin-bottom: 20px; margin-left: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议封面：</label>
+                <img :src="selectedConference.imgUrl" alt="会议封面" style="height: 300px;  margin-left: 15px;" />
+              </p>
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议内容：</label>
+<!--                <p style="font-size: 17px; margin-left: 15px;">{{selectedConference.content}}</p>-->
+                <div style="font-size: 17px; margin-left: 15px;" v-html="selectedConference.content"></div>
+              </p>
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议开始时间：</label>
+                <label style="font-size: 18px;">{{selectedConference.beginTime}}</label>
+              </p>
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议结束时间：</label>
+                <label style="font-size: 18px;">{{selectedConference.endTime}}</label>
+              </p>
+              <p style="margin: 20px;">
+                <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">所属企业：</label>
+                <label style="font-size: 18px;">{{selectedConference.belongedCompany}}</label>
+              </p>
+
+            </el-card>
+            <div slot="footer" class="dialog-footer" style="margin-top: 30px;">
+              <el-divider> 底部分割线 </el-divider>
+            </div>
+          </el-dialog>
+
+          <!-- 辅助使用自定义图片上传 -->
+          <input type="file" id="uploadImageBtn" hidden accept='image/*'  @change="handleUploadImage" />
 
           <el-pagination style="margin-left: 550px; margin-top: 50px;"
                      :current-page="currentPage"
@@ -305,14 +360,18 @@ import mitt from "mitt";
 import FileSaver from 'file-saver';
 import * as XLSX from 'xlsx';
 import table2excel from 'js-table2excel';
-import { onBeforeUnmount, ref, shallowRef } from 'vue'
-import { Editor, Toolbar,  } from '@wangeditor/editor-for-vue'
+import {onBeforeUnmount, ref, shallowRef, toRaw} from 'vue'
+// import { Editor, Toolbar,  } from '@wangeditor/editor-for-vue'
+import { QuillEditor, Quill } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css';
+import '@vueup/vue-quill/dist/vue-quill.bubble.css';
+import * as events from "node:events";
 
-axios.defaults.withCredentials =true;
+axios.defaults.withCredentials = true;
 const emitter = mitt()
 
 export default {
-  components: { Editor, Toolbar },
+  // components: { Editor, Toolbar},
   setup() {
     // const userType = ref("1")
     const nowIndex = ref("5");
@@ -324,94 +383,24 @@ export default {
       })
     };
 
-    // 编辑器实例，必须用 shallowRef
-    const editorRef = shallowRef()
-
-    // 内容 HTML
-    const valueHtml = ref('')
-    const toolbarConfig = {}
-    // const editorConfig = { placeholder: '请输入内容...' }
-
-    // 组件销毁时，也及时销毁编辑器
-    onBeforeUnmount(() => {
-      const editor = editorRef.value
-      if (editor == null) return
-      editor.destroy()
-    })
-
-    const handleEditorCreated = (editorInstance: object) => {
-      editorRef.value = editorInstance // 记录 editor 实例，重要！
-    }
-
-    const editorConfig = {
-      placeholder: 'Type here...',
-      onChange(editor) {
-        const html = editor.getHtml()
-        console.log('editor content', html)
-        // 也可以同步到 <textarea>
-      }
-    }
-
-
-    // const { createEditor, createToolbar } = window.wangEditor
-    //
-    // const editorConfig = {
-    //   placeholder: 'Type here...',
-    //   onChange(editor) {
-    //     const html = editor.getHtml()
-    //     console.log('editor content', html)
-    //     // 也可以同步到 <textarea>
-    //   }
-    // }
-    //
-    // const editor = createEditor({
-    //   selector: '#editor-container',
-    //   html: '<p><br></p>',
-    //   config: editorConfig,
-    //   mode: 'default', // or 'simple'
-    // })
-    //
-    // const toolbarConfig = {}
-    //
-    // const toolbar = createToolbar({
-    //   editor,
-    //   selector: '#toolbar-container',
-    //   config: toolbarConfig,
-    //   mode: 'default', // or 'simple'
-    // })
-
-
-    const pickerOptions = {
-      shortcuts: [{
-        text: '今天',
-        onClick(picker: any) {
-          picker.$emit('pick', new Date());
-        }
-      }, {
-        text: '昨天',
-        onClick(picker: any) {
-          const date = new Date();
-          date.setTime(date.getTime() - 3600 * 1000 * 24);
-          picker.$emit('pick', date);
-        }
-      }, {
-        text: '一周前',
-        onClick(picker: any) {
-          const date = new Date();
-          date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
-          picker.$emit('pick', date);
-        }
-      }]
-    };
 
     return {
       UserFilled, nowIndex, httpRequest,
-      editorRef, valueHtml, mode: 'simple', // 或 'default'
-      toolbarConfig, editorConfig,
-      handleEditorCreated,
-      pickerOptions,
+
     }
   },
+  mounted() {
+    // const quill = toRaw(this.myQuillEditor.value).getQuill()
+    // if (this.myQuillEditor.value) {
+    //   // quill.getModule('toolbar').addHandler('image', imgHandler)
+    //   console.log("QuillEditor创建完成")
+    // }
+
+    this.loadData();
+    //规定针对事件信号的响应机制(handler)，
+    emitter.on('urlChange', e => this.uploadUrl=e as string )
+  },
+
   data() {
     return {
       currentUser: <USERDATA>{
@@ -451,6 +440,8 @@ export default {
         imgUrl: "",
         belongedCompany: ""
       },
+      viewDetails_dialogVisible: false,
+
       addConference_dialogFormVisible: false,
       add_conferenceForm: <Conference>{
         conferenceId: -1,
@@ -498,20 +489,137 @@ export default {
         ],
       },
 
+      selectedQuill: null,
+      quill1: null,
+      quill2: null,
+
     }
   },
 
-  mounted() {
-    // const route = useRoute();
-    // this.loadUser();
-    // this.loadConferences();
-    this.loadData();
-
-    //规定针对事件信号的响应机制(handler)，
-    emitter.on('urlChange', e => this.uploadUrl=e as string )
-  },
 
   methods: {
+    onEditorReady1(quillInstance:Quill) {
+      this.quill1 = quillInstance;
+      console.log("用于修改的编辑器已准备好");
+      console.log(this.quill1);
+    },
+    onEditorReady2(quillInstance:Quill) {
+      this.quill2 = quillInstance;
+      console.log("用于添加的编辑器已准备好");
+      console.log(this.quill2);
+    },
+    setFocusQuill(quillInstance:Quill) {
+      // this.selectedQuill = quillInstance;
+      console.log(222)
+      console.log("传入的参数：")
+      console.log(quillInstance); //这个实际上不是Quill，而是Quill容器！！
+      console.log("真正的Quill: ")
+      console.log(this.selectedQuill);
+    },
+    handleUploadImage(e) {
+      const files = Array.prototype.slice.call(e.target.files)
+      console.log("files: ", files)
+      if (!files) {
+        return
+      }
+      uploadFile(files[0]).then(res => {
+        if (res.data.data.links.url) {
+          // const quill = toRaw(myQuillEditor.value).getQuill()
+          console.log(111)
+          console.log(this.selectedQuill);
+          console.log("quil1: ");
+          console.log(this.quill1)
+          console.log("quil2: ");
+          console.log(this.quill2)
+
+          const range = this.selectedQuill.getSelection();
+          this.selectedQuill.insertEmbed(range?.index, 'image', res.data.data.links.url)
+          this.selectedQuill.setSelection(range?.index + 1)
+          // resolve(res.data.data.links.url);
+          console.log("富文本编辑器图片上传成功----")
+          console.log(res.data.data.links.url)
+        }
+      })
+    },
+    imageHandler(quill: Quill) {
+      this.selectedQuill = quill; //切换选中的quill实例
+      console.log(333)
+      console.log(this.selectedQuill);
+      return function () { //返回的是个函数
+        // console.log(quill); //这个打印是null
+        document.getElementById("uploadImageBtn").click();
+      }
+
+    },
+    editorOptions1() {
+      return {
+        modules: {
+          toolbar: {
+            container: [
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ 'size': ['small', false, 'large', 'huge'] }],
+              [{ 'font': [] }],
+              [{ 'align': [] }],
+              [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+              [{ 'indent': '-1' }, { 'indent': '+1' }],
+              [{ 'header': 1 }, { 'header': 2 }],
+              ['image'],
+              [{ 'direction': 'rtl' }],
+              [{ 'color': [] }, { 'background': [] }]
+            ],
+            handlers: {
+              image: this.imageHandler(this.quill1)
+            },
+          }
+
+        },
+        placeholder: '请输入内容...'
+      }
+    },
+    editorOptions2() {
+      return {
+        modules: {
+          toolbar: {
+            container: [
+              ['bold', 'italic', 'underline', 'strike'],
+              [{ 'size': ['small', false, 'large', 'huge'] }],
+              [{ 'font': [] }],
+              [{ 'align': [] }],
+              [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+              [{ 'indent': '-1' }, { 'indent': '+1' }],
+              [{ 'header': 1 }, { 'header': 2 }],
+              ['image'],
+              [{ 'direction': 'rtl' }],
+              [{ 'color': [] }, { 'background': [] }]
+            ],
+            handlers: {
+              image: this.imageHandler(this.quill2) //很笨，但貌似这样才有用...
+            },
+          }
+
+        },
+        placeholder: '请输入会议内容：'
+      }
+    },
+    setContentValue() {
+      //好像貌似用不到
+    },
+    getPlainTextFromHtml(html) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+      return tempDiv.textContent || tempDiv.innerText || '';
+    },
+    handleSelectSuggestion(suggestion: Conference) {
+      console.log(suggestion.conferenceName+"在搜索框被选中");
+    },
+    searchConferenceName_suggestions(queryString: string, cb: any) {
+      const results = this.conferenceList.filter((conference) => conference.conferenceName.indexOf(queryString) != -1);
+      cb(results); //通过回调函数返回建议数据
+    },
+    searchCreator_suggestions(queryString: string, cb: any) {
+      const results = this.conferenceList.filter((conference) => conference.creator.indexOf(queryString) != -1);
+      cb(results); //通过回调函数返回建议数据
+    },
     handleSizeChange(val: number) {
       this.pageSize = val;
       this.load_showData();
@@ -632,6 +740,7 @@ export default {
       this.tableData = this.conferenceList;
       this.load_showData();
     },
+
     start_addConference() {
       if (this.currentUser.userType == 2) {
         ElMessage({message: "您是系统管理员，不属于某一企业，不能新增会议哦~", type: "warning"});
@@ -740,6 +849,11 @@ export default {
 
       });
     },
+    start_viewConferenceDetails(conference: Conference) {
+      this.selectedConference = conference;
+      this.viewDetails_dialogVisible = true;
+    },
+
     deleteSingleConference(conference: Conference) {
       ElMessageBox.confirm(
           `确认要删除会议名称为[ ${conference.conferenceName} ]的会议数据项吗？`,
