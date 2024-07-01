@@ -313,7 +313,8 @@
               <p style="margin: 20px;">
                 <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议内容：</label>
 <!--                <p style="font-size: 17px; margin-left: 15px;">{{selectedConference.content}}</p>-->
-                <div style="font-size: 17px; margin-left: 15px; max-width: 300px;" v-html="selectedConference.content"></div>
+                <div style="font-size: 17px; margin-left: 15px; margin-right: 30px;"
+                     v-html="selectedConference.content"></div>
               </p>
               <p style="margin: 20px;">
                 <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议开始时间：</label>
