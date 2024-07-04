@@ -24,17 +24,16 @@ export interface Conference {
     belongedCompany: string
 }
 
-export  interface Course{
-    courseName:string,
-    author:string,
-    imgUrl:string,
-    courseIntroduction:string,
-    courseCompare:string,
-    courseMediaUrl:string,
-    courseCode:string,
+export interface Dynamic {
+    dynamicId: number,
+    dynamicTitle: string,
+    dynamicAuthor: string,
+    dynamicIntro: string,
+    imgUrl: string,
+    date: string,
+    dynamicContent: string,
+    company: string
 }
-
-
 export const PathNameTable= {
     "/mainView":"主页",
     "/mainView/conferenceManagement":"会议管理",
@@ -63,8 +62,6 @@ export const loadingData = (): Promise<USERDATA> => Axios.post("http://localhost
     throw error;
 });
 
-
-
 export const uploadFile = (file:File): Promise<AxiosResponse<any>> => Axios.post("https://picui.cn/api/v1/upload", {
         'file':file
     },{
@@ -76,17 +73,32 @@ export const uploadFile = (file:File): Promise<AxiosResponse<any>> => Axios.post
         console.error(error);
         throw error;
     })
+
+export const getDynamic = (): Promise<Dynamic[]> => Axios.post("http://localhost:8080/dynamic/list", {}, {
+    withCredentials: true
+}).then((res) => {
+    if (res.status === 200) {
+        console.log(res)
+        return res.data.dynamic as Dynamic[];
+    } else {
+        throw new Error();
+    }
+}).catch((error) => {
+    console.error(error);
+    throw error;
+});
+
 export const getSignatrue= (): Promise<string> =>{
-       return Axios.post("http://localhost:8080/Course/getSignature", {},{
-            withCredentials:true,
-        }).then((res)=>{
-            if (res.status === 200) {
-                return res.data.signature as string
-            }
-            else{
-                return "";
-            }
-        }).catch((error) => {
-            return error;
-        })
+    return Axios.post("http://localhost:8080/Course/getSignature", {},{
+        withCredentials:true,
+    }).then((res)=>{
+        if (res.status === 200) {
+            return res.data.signature as string
+        }
+        else{
+            return "";
+        }
+    }).catch((error) => {
+        return error;
+    })
 }
