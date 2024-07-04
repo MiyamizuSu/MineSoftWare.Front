@@ -382,17 +382,18 @@ export default {
   // components: { Editor, Toolbar},
   setup() {
     const nowIndex = ref("5");
-    const httpRequest =(options: UploadRequestOptions ) : void=>{
-      const fileTo=options.file
-      uploadFile(fileTo).then(res=>{
-        console.log(res.data.data.links.url)
-        emitter.emit('urlChange',res.data.data.links.url); //发出改变信号，即向图床上传图片获得的url
-      })
-    };
+    // const httpRequest = (options: UploadRequestOptions) => {
+    //   const fileTo = options.file
+    //   uploadFile(fileTo).then(res => {
+    //     console.log(res.data.data.links.url)
+    //     emitter.emit('urlChange', res.data.data.links.url); //发出改变信号，即向图床上传图片获得的url
+    //   })
+    // };
 
 
     return {
-      UserFilled, nowIndex, httpRequest,
+      UserFilled, nowIndex,
+      // httpRequest,
 
     }
   },
@@ -496,7 +497,7 @@ export default {
         ],
       },
 
-      selectedQuill: <Quill>null,
+      selectedQuill: {} as Quill,
       quill1: {} as Quill,
       quill2: {} as Quill,
 
@@ -505,6 +506,19 @@ export default {
 
 
   methods: {
+    async httpRequest(options: UploadRequestOptions ) {
+      const fileTo=options.file
+      //这儿可以进行一下图片压缩操作，避免图片过大上传失败
+      const compressedBlob :Blob = await this.compressImage(fileTo); // 压缩图片
+      console.log("compressedBlob: ");
+      console.log(compressedBlob); //Blob类型，与需要的File类型不符
+      const compressedFile = await this.blobToFile(compressedBlob, fileTo.name);
+      uploadFile(compressedFile).then(res=>{
+        console.log(res.data.data.links.url)
+        //发出改变信号，即向图床上传图片获得的url
+        emitter.emit('urlChange',res.data.data.links.url);
+      })
+    },
     onEditorReady1(quillInstance:Quill) {
       this.quill1 = quillInstance;
       console.log("用于修改的编辑器已准备好");
@@ -526,7 +540,7 @@ export default {
     compressImage(file: File) { //压缩图片
       return new Promise((resolve, reject) => {
         new Compressor(file, {
-          quality: 0.8, // 设置压缩质量
+          quality: 0.75, // 设置压缩质量
           maxWidth: 550, // 设置图片最大宽度
           maxHeight: 450, // 设置图片最大高度
           success(result) {
@@ -550,7 +564,7 @@ export default {
       if (!file) {
         return
       }
-      const compressedBlob = await this.compressImage(file); // 压缩图片
+      const compressedBlob :Blob = await this.compressImage(file); // 压缩图片
       console.log("compressedBlob: ");
       console.log(compressedBlob); //Blob类型，与需要的File类型不符
       const compressedFile = await this.blobToFile(compressedBlob, file.name);
@@ -561,10 +575,10 @@ export default {
             // const quill = toRaw(myQuillEditor.value).getQuill()
             console.log(111)
             console.log(this.selectedQuill);
-            console.log("quil1: ");
-            console.log(this.quill1)
-            console.log("quil2: ");
-            console.log(this.quill2)
+            // console.log("quil1: ");
+            // console.log(this.quill1)
+            // console.log("quil2: ");
+            // console.log(this.quill2)
 
             const range = this.selectedQuill.getSelection();
             this.selectedQuill.insertEmbed(<number>range?.index, 'image', res.data.data.links.url)
@@ -752,7 +766,11 @@ export default {
         //   height: 100,
         // }
       ];
-      const exportData = JSON.parse(JSON.stringify(this.tableData));
+      let excelData = this.tableData;
+      for (let conference of excelData) {
+        conference.content = this.getPlainTextFromHtml(conference.content);
+      }
+      const exportData = JSON.parse(JSON.stringify(excelData));
       table2excel(column, exportData, "会议列表");
     },
     handleSelectionChange(val: Conference[]) {
