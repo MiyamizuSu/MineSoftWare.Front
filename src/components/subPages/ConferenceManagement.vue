@@ -47,7 +47,7 @@
                 value-key="conferenceName"
                 clearable
                 class="inline-input w-50"
-                style="width: 200px; margin-left: 15px; margin-right: 60px; font-size: 14px;"
+                style="width: 210px; margin-left: 15px; margin-right: 60px; font-size: 14px;"
                 placeholder="请输入会议名称"
                 @select="handleSelectSuggestion"
             />
@@ -59,7 +59,7 @@
                 value-key="creator"
                 clearable
                 class="inline-input w-50"
-                style="width: 170px; margin-left: 15px; margin-right: 60px; font-size: 14px;"
+                style="width: 180px; margin-left: 15px; margin-right: 60px; font-size: 14px;"
                 placeholder="请输入会议创建人"
                 @select="handleSelectSuggestion"
             />
@@ -73,7 +73,7 @@
                 >
             </el-date-picker>
 
-            <el-button type="primary" plain icon="Search"  @click="search" style="font-size: 14px; margin-left: 20px;">搜索</el-button>
+            <el-button type="primary" plain icon="Search"  @click="search" style="font-size: 14px; margin-left: 40px;">搜索</el-button>
             <el-button type="info" plain icon="Refresh"  @click="resetSearch" style="font-size: 14px; margin-left: 20px;">重置</el-button>
           </div>
 
@@ -98,7 +98,7 @@
             <el-table-column
                 prop="conferenceName"
                 label="会议名称"
-                width="160"
+                width="180"
                 style="text-align: center;"
                 show-overflow-tooltip
             >
@@ -106,12 +106,12 @@
             <el-table-column
                 prop="creator"
                 label="创建人"
-                width="160">
+                width="180">
             </el-table-column>
             <el-table-column
                 prop="state"
                 label="会议状态"
-                width="90">
+                width="100">
             </el-table-column>
             <el-table-column
                 label="会议内容"
@@ -127,12 +127,12 @@
             <el-table-column
                 prop="beginTime"
                 label="开始时间"
-                width="140">
+                width="160">
             </el-table-column>
             <el-table-column
                 prop="endTime"
                 label="结束时间"
-                width="140">
+                width="160">
             </el-table-column>
 
 <!--            <el-table-column-->
@@ -146,7 +146,7 @@
                 <el-button  plain icon="View" @click="start_viewConferenceDetails(scope.row)">详情</el-button>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="180" fixed="right">
+            <el-table-column label="操作" width="190" fixed="right">
               <template #default="scope">
                 <label @click="start_updateConference(scope.row)"
                        style="font-size: 15px; color: #007bff; margin-left: -10px; margin-right: 30px;" ><el-icon> <Edit /> </el-icon> 修改</label>
@@ -318,7 +318,7 @@
 
             </el-card>
             <div slot="footer" class="dialog-footer" style="margin-top: 30px;">
-              <el-divider> 底部分割线 </el-divider>
+<!--              <el-divider> 底部分割线 </el-divider>-->
             </div>
           </el-dialog>
 
@@ -670,7 +670,7 @@ export default {
     handleCurrentChange(val: number) {
       this.currentPage = val;
       this.load_showData();
-      ElMessage({message: `当前页: ${this.currentPage}`, type: "info"});
+      // ElMessage({message: `当前页: ${this.currentPage}`, type: "info"});
     },
     load_showData() {
       let res = [];
