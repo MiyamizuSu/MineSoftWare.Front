@@ -81,8 +81,8 @@
         <el-button link type="primary" size="small" @click="showDetail(scope.row)">
           详情
         </el-button>
-        <el-button link type="primary" size="small" @click="showEditForm(scope.row)">编辑</el-button>
-        <el-button link type="primary" size="small" @click="openDelteConfirm(scope.row)">删除</el-button>
+        <el-button link type="primary" size="small" @click="showEditForm(scope.row)"> <el-icon> <Edit /> </el-icon>编辑</el-button>
+        <el-button link type="primary" size="small" @click="openDelteConfirm(scope.row)"> <el-icon> <Delete /> </el-icon> 删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -692,6 +692,7 @@ export default {
         if (res.data.status === "200"){
           ElMessage({
             type: 'success',
+            grouping: true,
             message: '删除成功',
           })
           this.reloadData();
