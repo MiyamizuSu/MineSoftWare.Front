@@ -11,6 +11,17 @@ export interface USERDATA{
     belongDept: string,
     startTime: string,
 }
+export interface Course{
+    courseMediaUrl:string,
+    courseIntroduction:string,
+    courseCompare:string,
+    courseName:string,
+    status:string,
+    author:string,
+    courseCode:string,
+    imgUrl:string,
+}
+
 
 export interface Conference {
     conferenceId: number,
@@ -36,6 +47,38 @@ export interface Company {
     companyName: string
 }
 
+
+export interface UserDate{
+    userName: string,
+    userRealName: string,
+    userPhoneNumber: string,
+    userEmail: string,
+    imgUrl: string,
+    userType: number,
+    belongCompany: string,
+    belongDept: string,
+    startTime: string,
+    userPassword:string,
+}
+
+export interface TenantDate{
+    companyName: string,
+    imgUrl: string,
+    connectorName: string,
+    userName: string,
+    userPhoneNumber: string
+}
+
+export interface Dynamic {
+    dynamicId: number,
+    dynamicTitle: string,
+    dynamicAuthor: string,
+    dynamicIntro: string,
+    imgUrl: string,
+    date: string,
+    dynamicContent: string,
+    company: string
+}
 export const PathNameTable= {
     "/mainView":"主页",
     "/mainView/conferenceManagement":"会议管理",
@@ -76,3 +119,35 @@ export const uploadFile = (file:File): Promise<AxiosResponse<any>> => Axios.post
         console.error(error);
         throw error;
     })
+
+export const getDynamic = (): Promise<Dynamic[]> => Axios.post("http://localhost:8080/dynamic/list", {}, {
+    withCredentials: true
+}).then((res) => {
+    if (res.status === 200) {
+        console.log(res)
+        return res.data.dynamic as Dynamic[];
+    } else {
+        throw new Error();
+    }
+}).catch((error) => {
+    console.error(error);
+    throw error;
+});
+
+export const getSignatrue= (): Promise<string> =>{
+    return Axios.post("http://localhost:8080/Course/getSignature", {},{
+        withCredentials:true,
+    }).then((res)=>{
+        if (res.status === 200) {
+            return res.data.signature as string
+        }
+        else{
+            return "";
+        }
+    }).catch((error) => {
+        return error;
+    })
+}
+export const momoSearch = (before: Course[],query:string) : Course[] => {
+    return before.filter(course => course.courseName.includes(query));
+};
