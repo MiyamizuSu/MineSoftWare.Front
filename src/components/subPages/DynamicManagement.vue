@@ -1,5 +1,6 @@
 <template>
   <div class="container">
+    
     <div>
       <div class="search-group">
         <div class="sub-title my-2 text-sm text-gray-600">
@@ -104,7 +105,7 @@
       <el-dialog
           v-model="detailVisble"
           title="详情页"
-          width="800"
+          width="1200"
           :before-close="detailClose"
       >
         <span></span>
@@ -172,7 +173,7 @@
                   动态内容
                 </div>
               </template>
-              {{ currentDetail.dynamicContent }}
+              <div v-html="currentDetail.dynamicContent"></div>
             </el-descriptions-item>
 
           </el-descriptions>
@@ -180,10 +181,7 @@
 
         <template #footer>
           <div class="dialog-footer">
-            <el-button @click="detailVisble = false">取消</el-button>
-            <el-button type="primary" @click="detailVisble = false">
-              确定
-            </el-button>
+            <el-button type="danger" plain @click="detailVisble = false">关闭</el-button>
           </div>
         </template>
       </el-dialog>
@@ -195,7 +193,7 @@
       <el-dialog
           v-model="addFormVisble"
           title="添加动态"
-          width="800"
+          width="1200"
           :before-close="addFormClose"
       >
         <el-form :model="addDynamicForm" :rules="addDynamicFormRules">
@@ -220,10 +218,15 @@
           <p style="margin-top: 0;display: inline">格式为</p>
           <p style="color: red; margin-top: 0; display: inline">png/jpg/jpeg</p>
           <p style="margin-top: 0; display: inline">的文件</p>
-
-          <el-form-item label="新闻内容" prop="dynamicContent" label-width="120px">
-            <el-input type="textarea" v-model="addDynamicForm.dynamicContent" placeholder="请输入新闻内容" autocomplete="off" :rows="10"></el-input>
+          
+          
+          <el-form-item label="新闻内容" prop="dynamicContent">
+            <DynamicRichTextEditor v-model="addDynamicForm.dynamicContent"/>
           </el-form-item>
+          
+<!--          <el-form-item label="新闻内容" prop="dynamicContent" label-width="120px">-->
+<!--            <el-input type="textarea" v-model="addDynamicForm.dynamicContent" placeholder="请输入新闻内容" autocomplete="off" :rows="10"></el-input>-->
+<!--          </el-form-item>-->
 
           <el-form-item label="作者" prop="dynamicAuthor" label-width="120px">
             <el-input type="text" v-model="addDynamicForm.dynamicAuthor" placeholder="请输入作者" autocomplete="off" ></el-input>
@@ -240,7 +243,7 @@
             <el-button type="primary" @click="addDynamic">
               添加
             </el-button>
-            <el-button @click="addFormVisble = false">取消</el-button>
+            <el-button @click="addCancel">取消</el-button>
           </div>
         </template>
       </el-dialog>
@@ -251,7 +254,7 @@
       <el-dialog
           v-model="editFormVisble"
           title="修改资讯管理"
-          width="800"
+          width="1200"
           :before-close="editFormClose"
       >
         <el-form :model="editDynamicForm">
@@ -277,9 +280,13 @@
           <p style="color: red; margin-top: 0; display: inline">png/jpg/jpeg</p>
           <p style="margin-top: 0; display: inline">的文件</p>
 
-          <el-form-item label="新闻内容" prop="editDynamicContent" label-width="120px">
-            <el-input type="textarea" v-model="editDynamicForm.dynamicContent" placeholder="请输入新闻内容" autocomplete="off" :rows="10"></el-input>
+          <el-form-item label="新闻内容" prop="editDynamicContent">
+            <DynamicRichTextEditor v-model="editDynamicForm.dynamicContent"/>
           </el-form-item>
+          
+<!--          <el-form-item label="新闻内容" prop="editDynamicContent" label-width="120px">-->
+<!--            <el-input type="textarea" v-model="editDynamicForm.dynamicContent" placeholder="请输入新闻内容" autocomplete="off" :rows="10"></el-input>-->
+<!--          </el-form-item>-->
 
           <el-form-item label="新闻简介" prop="editDynamicIntro" label-width="120px">
             <el-input type="text" v-model="editDynamicForm.dynamicIntro" placeholder="请输入新闻简介" autocomplete="off" ></el-input>
@@ -297,7 +304,7 @@
         </template>
       </el-dialog>
     </div>
-    
+<!--    修改确认表单-->
     <div>
       <el-dialog
           v-model="editConfirmDialogVisible"
@@ -373,9 +380,11 @@ import mitt from "mitt";
 import {Delete, Download, Edit, Plus} from "@element-plus/icons-vue";
 import * as XLSX from 'xlsx';
 import tableExcel from 'js-table2excel';
+import DynamicRichTextEditor from "@/components/diyComponents/DynamicRichTextEditor.vue";
 
 const emitter = mitt()
 export default {
+  components: {DynamicRichTextEditor},
   computed: {
     Plus() {
       return Plus
@@ -575,13 +584,23 @@ export default {
       ElMessageBox.confirm('确定关闭此添加页吗?')
           .then(() => {
             done()
+            this.addDynamicForm = {
+              company: "",
+              date: "",
+              dynamicId: 0,
+              dynamicTitle: '',
+              dynamicContent: '',
+              dynamicAuthor: '',
+              dynamicIntro: '',
+              imgUrl: ''
+            };
           })
           .catch(() => {
             // catch error
           })
     },
     editFormClose(done: () => void){
-      ElMessageBox.confirm('确定关闭此添加页吗?')
+      ElMessageBox.confirm('确定关闭此修改页吗?')
           .then(() => {
             done()
           })
@@ -590,7 +609,7 @@ export default {
           })
     },
     addDynamic(){ //添加动态
-      if (this.addDynamicForm.dynamicTitle === '' || this.addDynamicForm.dynamicContent === '' ||this.addDynamicForm.dynamicAuthor === '' || this.addDynamicForm.dynamicIntro === '') {
+      if (this.addDynamicForm.dynamicTitle === '' || this.addDynamicForm.dynamicContent === '' ||this.addDynamicForm.dynamicAuthor === '' || this.addDynamicForm.dynamicIntro === '' || this.addDynamicForm.dynamicContent === '<p><br></p>') {
         this.openAddDynamicTipWarn();
       }else{
         this.addDynamicForm.imgUrl = this.uploadUrl;
@@ -618,6 +637,19 @@ export default {
         };
         this.load_showData();
       }
+    },
+    addCancel(){
+      this.addFormVisble = false;
+      this.addDynamicForm = {
+        company: "",
+        date: "",
+        dynamicId: 0,
+        dynamicTitle: '',
+        dynamicContent: '',
+        dynamicAuthor: '',
+        dynamicIntro: '',
+        imgUrl: ''
+      };
     },
     showDetail(row: Dynamic) {
       this.currentDetail = row;

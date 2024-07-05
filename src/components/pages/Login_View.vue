@@ -142,6 +142,7 @@ export default {
                 grouping: true,
                 type: 'success',
               })
+              window.localStorage.setItem('userName', this.userMessageL.userName)
               this.$emit('successLogin')
               setTimeout(()=>{
                 router.push("/mainView")
