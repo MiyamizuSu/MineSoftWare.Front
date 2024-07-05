@@ -131,9 +131,7 @@
             </el-header>
             <el-main style="padding-top: 0;padding-left: 0">
               <router-view v-slot="{ Component }">
-                <transition name="el-fade-in-linear">
                   <component :is="Component" :key="$route.path" />
-                </transition>
               </router-view>
             </el-main>
           </el-container>
@@ -213,6 +211,7 @@ computed:{
         axios.get("http://localhost:8080/user/logout").then(
             res => {
               if (res.status === 200) {
+                localStorage.removeItem("userName")
                 router.push("/basicView")
               }
             }
@@ -243,14 +242,14 @@ computed:{
 
       }
       else if (index === "3") {
-       
+
       }
       else if (index === "4") {
         router.push("/mainView/dynamicManagement")
         this.pathList.splice(0,this.pathList.length);
         this.pathList.push("/mainView")
         this.pathList.push("/mainView/dynamicManagement")
-}
+      }
       else if (index === "5") {
         router.push("/mainView/courseManagement")
         this.pathList.splice(0,this.pathList.length);

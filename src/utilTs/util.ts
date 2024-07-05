@@ -11,6 +11,17 @@ export interface USERDATA{
     belongDept: string,
     startTime: string,
 }
+export interface Course{
+    courseMediaUrl:string,
+    courseIntroduction:string,
+    courseCompare:string,
+    courseName:string,
+    status:string,
+    author:string,
+    courseCode:string,
+    imgUrl:string,
+}
+
 
 export interface Conference {
     conferenceId: number,
@@ -22,6 +33,27 @@ export interface Conference {
     endTime: string,
     imgUrl: string,
     belongedCompany: string
+}
+
+export interface UserDate{
+    userName: string,
+    userRealName: string,
+    userPhoneNumber: string,
+    userEmail: string,
+    imgUrl: string,
+    userType: number,
+    belongCompany: string,
+    belongDept: string,
+    startTime: string,
+    userPassword:string,
+}
+
+export interface TenantDate{
+    companyName: string,
+    imgUrl: string,
+    connectorName: string,
+    userName: string,
+    userPhoneNumber: string
 }
 
 export interface Dynamic {
@@ -102,3 +134,6 @@ export const getSignatrue= (): Promise<string> =>{
         return error;
     })
 }
+export const momoSearch = (before: Course[],query:string) : Course[] => {
+    return before.filter(course => course.courseName.includes(query));
+};
