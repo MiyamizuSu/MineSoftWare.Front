@@ -41,8 +41,6 @@
           <!-- 搜索框 -->
           <div style="margin-top: 0;">
             <label style="font-size: 14px; font-weight: bolder;">会议名称</label>
-<!--            <el-input placeholder="请输入会议名称"   type="text" v-model="search_conferenceName"-->
-<!--                      style="width: 160px; margin-left: 15px; margin-right: 60px; font-size: 14px;" clearable></el-input>-->
             <el-autocomplete
                 v-model="search_conferenceName"
                 :fetch-suggestions="searchConferenceName_suggestions"
@@ -86,7 +84,7 @@
             <el-button type="danger" plain icon="Delete"  @click="deleteSelectedConferences"  style="font-size: 13px; margin: 5px; width: 70px; text-align: center;">删除</el-button>
             <el-button type="warning" plain icon="Download"  @click="onBatchExport"  style="font-size: 13px; margin: 5px; width: 70px; text-align: center;">导出</el-button>
           </p>
-
+          <!-- 主要的表格部分 -->
           <el-table
               v-bind:data="showData"
               height="550px"
@@ -97,12 +95,6 @@
           >
             <el-table-column type="selection"  label="选择">
             </el-table-column>
-<!--            <el-table-column-->
-<!--                prop="conferenceId"-->
-<!--                label="会议编号"-->
-<!--                width="80"-->
-<!--                style="text-align: center;">-->
-<!--            </el-table-column>-->
             <el-table-column
                 prop="conferenceName"
                 label="会议名称"
@@ -178,23 +170,18 @@
                     :http-request="httpRequest"
                     :crossorigin="'use-credentials'"
                 >
-                  <img v-if="uploadUrl" :src="uploadUrl" class="avatar" style="width: 220px; max-height: 250px;">
+                  <img v-if="uploadUrl" :src="uploadUrl" class="avatar" style="max-width: 350px; max-height: 300px;">
                   <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
                 </el-upload>
               </el-form-item>
               <p style="color: red; margin-top: 0; margin-left: 120px;">请上传大小不超过5MB 格式为png/jpg/jpeg的文件</p>
-<!--              <el-form-item label="会议内容" prop="content" label-width="120px">-->
-<!--                <img src="../resource/rich_text_edit.png" style="width: 1153px; margin: 0; padding: 0;">-->
-<!--                <el-input type="textarea" v-model="add_conferenceForm.content" :autosize="{ minRows: 5, maxRows: 10}"-->
-<!--                          clearable  placeholder="请输入会议内容" style="margin-top: -15px; padding: 0; font-size: 15px;"></el-input>-->
-<!--              </el-form-item>-->
 
               <p style="width: 120px; font-size: 15px; font-weight: bolder;">会议内容：</p>
               <QuillEditor
                   theme="snow" v-model:content="add_conferenceForm.content"
                   :options="editorOptions2(this)"  contentType="html"
                   @update:content="setContentValue"
-                  style="margin-top: 5px; margin-bottom: 20px; height: 200px;"
+                  style="margin-top: 5px; margin-bottom: 20px; height: 300px;"
                   @focus="setFocusQuill"
                   @ready="onEditorReady2"
               />
@@ -222,8 +209,8 @@
                     style="width: 300px;">
                 </el-date-picker>
               </el-form-item>
-
             </el-form>
+
             <div slot="footer" class="dialog-footer" style="margin-top: 30px;">
               <el-button type="primary" @click="confirm_addConference" style="margin-left: 30%; margin-right: 20px;">确定</el-button>
               <el-button @click="cancel_addConference">取消</el-button>
@@ -244,7 +231,7 @@
                     :http-request="httpRequest"
                     :crossorigin="'use-credentials'"
                 >
-                  <img v-if="uploadUrl" :src="uploadUrl" class="avatar" style="width: 220px; max-height: 250px;">
+                  <img v-if="uploadUrl" :src="uploadUrl" class="avatar" style="max-width: 350px; max-height: 300px;">
                   <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
                 </el-upload>
               </el-form-item>
@@ -259,7 +246,7 @@
                   theme="snow" v-model:content="edit_conferenceForm.content"
                   :options="editorOptions1(this)"  contentType="html"
                   @update:content="setContentValue"
-                 style="margin-top: 5px; margin-bottom: 20px; height: 200px;"
+                 style="margin-top: 5px; margin-bottom: 20px; height: 300px;"
                   @focus="setFocusQuill"
                   @ready="onEditorReady1"
               />
@@ -335,9 +322,10 @@
             </div>
           </el-dialog>
 
-          <!-- 辅助使用自定义图片上传 -->
+          <!-- 辅助实现富文本编辑器自定义图片上传 -->
           <input type="file" id="uploadImageBtn" hidden accept='image/*'  @change="handleUploadImage" />
 
+          <!-- 分页栏 -->
           <el-pagination style="margin-left: 550px; margin-top: 50px;"
                      :current-page="currentPage"
                      :page-sizes="[5, 10, 15, 20]"
@@ -462,7 +450,7 @@ export default {
         imgUrl: "",
         belongedCompany: ""
       },
-      add_content_valueHTML: "",
+      // add_content_valueHTML: "",
       updateConference_dialogFormVisible: false,
       edit_conferenceForm: <Conference>{
         conferenceId: -1,
@@ -475,7 +463,7 @@ export default {
         imgUrl: "",
         belongedCompany: ""
       },
-      edit_content_valueHTML: "",
+      // edit_content_valueHTML: "",
       add_conferenceRules: {
         conferenceName: [
           {required: true, message: "请输入会议名称", trigger: "blur"}
