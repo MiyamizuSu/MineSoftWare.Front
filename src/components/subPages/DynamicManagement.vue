@@ -149,7 +149,7 @@
               <template #label>
                 <div class="cell-item">
                   <el-icon>
-                    <Notebook />
+                    <Notebook/>
                   </el-icon>
                   新闻简介
                 </div>
