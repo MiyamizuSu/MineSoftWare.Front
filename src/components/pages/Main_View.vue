@@ -213,6 +213,7 @@ computed:{
         axios.get("http://localhost:8080/user/logout").then(
             res => {
               if (res.status === 200) {
+                localStorage.removeItem("userName")
                 router.push("/basicView")
               }
             }

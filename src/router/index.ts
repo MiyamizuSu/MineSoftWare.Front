@@ -6,6 +6,8 @@ import userMessage_View from "@/components/pages/UserMessage_View.vue";
 import ConferenceManagement from "@/components/subPages/ConferenceManagement.vue";
 import CourseManagement from "@/components/subPages/CourseManagement.vue";
 import DynamicManagement from "@/components/subPages/DynamicManagement.vue";
+import UserManagement from "@/components/subPages/UserManagement.vue";
+import TenantManagement from "@/components/subPages/TenantManagement.vue";
 
 const routes = [
     {
@@ -20,6 +22,14 @@ const routes = [
         path: "/mainView",
         component: main_View,
         children: [
+            {
+                path: "userManagement",
+                component: UserManagement,
+            },
+            {
+                path: "tenantManagement",
+                component: TenantManagement,
+            },
             {
                 path: "conferenceManagement",
                 component: ConferenceManagement,
