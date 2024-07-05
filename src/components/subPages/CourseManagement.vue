@@ -50,7 +50,10 @@
       <el-button type="primary" v-if="editType==='1'"  @click="submitMessage()" >确认</el-button>
       <el-button type="primary" v-else  @click="updateMessage">确认</el-button>
     </div>
-    <div v-if="isLoading" ></div>
+    <div v-if="isLoading" >
+      <el-progress v-if="loadingP!==100" :percentage="loadingP" />
+        <el-progress v-else-if="loadingP===100" :percentage="100" status="success" />
+    </div>
   </el-dialog>
   <el-dialog v-model="isShow" title="课程信息" draggable align-center @opened="setUrl" destroy-on-close>
     <div style="display: flex" >
@@ -80,7 +83,7 @@
     </div>
   </el-dialog>
   <el-container>
-    <el-header height="40px">
+    <el-header height="40px" >
       <div style="display:flex">
         <div style="display:inline-flex;white-space:nowrap;">
           <el-text style="width: max-content"> 课程名称</el-text>
@@ -110,7 +113,7 @@
         <el-button type="warning" :icon="Download" plain @click="exportExcel">  导出 </el-button>
       </div>
       <div>
-        <el-table :data="coursesView" @selection-change="selected" @cell-mouse-enter="hoverChange" @cell-dblclick="cellClick">
+        <el-table :data="coursesView" @selection-change="selected" @cell-mouse-enter="hoverChange" @cell-dblclick="cellClick" height="690px">
           <el-table-column type="selection"></el-table-column>
           <el-table-column prop="courseCode" label="课程代号" width="130"  />
           <el-table-column prop="courseName" label="课程名称"  />
@@ -186,6 +189,7 @@ export default {
     const isAdd= ref(false);
     const isPreview = ref(false)
     const isLoading=ref(false)
+    const loadingP=ref(0)
     const disabled = ref(false)
     const tempUrl=ref("")
     const isNeedPlus=ref(true)
@@ -284,6 +288,7 @@ export default {
       })
       uploader.on('media_progress', function(info) {
         console.log(info.percent) // 进度
+        loadingP.value=info.percent*100
       })
       uploader.done().then(function (doneResult) {
         doneResult.video.url
@@ -299,7 +304,7 @@ export default {
       tempUrl,isNeedPlus,isPreview,preview,
       disabled,imgListCount,changeCallBack, httpRequest,uploadRef,
       toVod,videoListCount,httpRequestV,imgUrlChanged,videoUrlChanged,uploadRefV,editType,canAdd,selectCount,beUpload,
-      bechange,beUploadV,beDeletedList,beDeletedSingle,nameSearch,compareSearch,isShow,checkFile,Select,Close,isLoading
+      bechange,beUploadV,beDeletedList,beDeletedSingle,nameSearch,compareSearch,isShow,checkFile,Select,Close,isLoading,loadingP
     }
 
   },
@@ -395,24 +400,33 @@ computed:{
       }
     },
     submitMessage(){
+      this.isLoading=true
       console.log("信息添加")
       this.canAdd=true
       if(this.imgListCount===0&&this.videoListCount===0){
-        Axios.post("http://localhost:8080/Course/addNewCourse",this.newCourse).then((res)=>{
-          if(res.status === 200){
-            if(res.data.statusCode==="200"){
-              ElMessage({
-                message:"添加成功",
-                type:"success",
-              })
-              this.imgUrlChanged=false;
-              this.videoUrlChanged=false;
-              setTimeout(()=>{
-                emitter.emit('someThingChange')
-              },1000)
+        if(this.newCourse.courseName!==''||this.newCourse.courseIntroduction!==''||this.newCourse.courseCompare!==''||this.newCourse.author!==''){
+          ElMessage({
+            message:"输入框内所填内容不许为空",
+            type:"warning",
+          })
+        }
+        else {
+          Axios.post("http://localhost:8080/Course/addNewCourse", this.newCourse).then((res) => {
+            if (res.status === 200) {
+              if (res.data.statusCode === "200") {
+                ElMessage({
+                  message: "添加成功",
+                  type: "success",
+                })
+                this.imgUrlChanged = false;
+                this.videoUrlChanged = false;
+                setTimeout(() => {
+                  emitter.emit('someThingChange')
+                }, 1000)
+              }
             }
-          }
-        })
+          })
+        }
       }
       else if(this.imgListCount!==0&&this.videoListCount===0){
         this.videoUrlChanged=true
@@ -428,26 +442,35 @@ computed:{
       }
     },
     updateMessage(){
+      this.isLoading=true
       console.log("信息更新")
       this.canAdd=true
       if(this.imgListCount===0&&this.videoListCount===0){
-        Axios.post("http://localhost:8080/Course/updateCourse",this.newCourse,{
-          withCredentials:true
-        }).then((res)=>{
-          if(res.status === 200){
-            if(res.data.statusCode==="200"){
-              ElMessage({
-                message:"修改成功",
-                type:"success",
-              })
-              this.imgUrlChanged=false;
-              this.videoUrlChanged=false;
-              setTimeout(()=>{
-                emitter.emit('someThingChange')
-              },1000)
+        if(this.newCourse.courseName!==''||this.newCourse.courseIntroduction!==''||this.newCourse.courseCompare!==''||this.newCourse.author!==''){
+          ElMessage({
+            message:"输入框内所填内容不许为空",
+            type:"warning",
+          })
+        }
+        else {
+          Axios.post("http://localhost:8080/Course/updateCourse", this.newCourse, {
+            withCredentials: true
+          }).then((res) => {
+            if (res.status === 200) {
+              if (res.data.statusCode === "200") {
+                ElMessage({
+                  message: "修改成功",
+                  type: "success",
+                })
+                this.imgUrlChanged = false;
+                this.videoUrlChanged = false;
+                setTimeout(() => {
+                  emitter.emit('someThingChange')
+                }, 1000)
+              }
             }
-          }
-        })
+          })
+        }
       }
       else if(this.imgListCount!==0&&this.videoListCount===0){
         this.videoUrlChanged=true
@@ -593,32 +616,48 @@ inject:['reload'],
       this.userType = parseInt(queryValue as string, 10) || 0;
     }
     const handleToback=():void=>{
-      Axios.post("http://localhost:8080/Course/addNewCourse",this.newCourse).then((res)=>{
-        if(res.status === 200){
-          if(res.data.statusCode==="200"){
-            ElMessage({
-              message:"添加成功",
-              type:"success",
-            })
-            this.imgUrlChanged=false;
-            this.videoUrlChanged=false;
+      if(this.newCourse.courseName!==''||this.newCourse.courseIntroduction!==''||this.newCourse.courseCompare!==''||this.newCourse.author!==''){
+        ElMessage({
+          message:"输入框内所填内容不许为空",
+          type:"warning",
+        })
+      }
+      else {
+        Axios.post("http://localhost:8080/Course/addNewCourse", this.newCourse).then((res) => {
+          if (res.status === 200) {
+            if (res.data.statusCode === "200") {
+              ElMessage({
+                message: "添加成功",
+                type: "success",
+              })
+              this.imgUrlChanged = false;
+              this.videoUrlChanged = false;
+            }
           }
-        }
-      })
+        })
+      }
     }
     const handleTobackUP=():void=>{
-      Axios.post("http://localhost:8080/Course/updateCourse",this.newCourse).then((res)=>{
-        if(res.status === 200){
-          if(res.data.statusCode==="200"){
-            ElMessage({
-              message:"修改成功",
-              type:"success",
-            })
-            this.imgUrlChanged=false;
-            this.videoUrlChanged=false;
+      if(this.newCourse.courseName!==''||this.newCourse.courseIntroduction!==''||this.newCourse.courseCompare!==''||this.newCourse.author!==''){
+        ElMessage({
+          message:"输入框内所填内容不许为空",
+          type:"warning",
+        })
+      }
+      else {
+        Axios.post("http://localhost:8080/Course/updateCourse", this.newCourse).then((res) => {
+          if (res.status === 200) {
+            if (res.data.statusCode === "200") {
+              ElMessage({
+                message: "修改成功",
+                type: "success",
+              })
+              this.imgUrlChanged = false;
+              this.videoUrlChanged = false;
+            }
           }
-        }
-      })
+        })
+      }
     }
     watch(()=>this.newCourse.courseMediaUrl, ()=>{
       this.videoUrlChanged=true;
@@ -673,4 +712,4 @@ inject:['reload'],
     })
   }
 }
-</script>
+</script>-
