@@ -73,14 +73,14 @@
            @selection-change="handleSelectionChange">
 
          <el-table-column type="selection" width="55" />
-    <el-table-column fixed prop="dynamicTitle" label="新闻标题" width="350">
+    <el-table-column fixed prop="dynamicTitle" label="新闻标题" width="400">
          <template #default="scope">
            <a @click="showDetail(scope.row)">{{ scope.row.dynamicTitle }}</a>
          </template>
     </el-table-column>
-    <el-table-column prop="dynamicAuthor" label="作者" width="320" />
-    <el-table-column prop="dynamicIntro" label="新闻简介" width="320" />
-    <el-table-column fixed="right" label="Operations" min-width="200">
+    <el-table-column prop="dynamicAuthor" label="作者" width="400" />
+    <el-table-column prop="dynamicIntro" label="新闻简介" width="400" />
+    <el-table-column fixed="right" label="Operations" width="200">
       <template #default="scope">
         <el-button link type="primary" size="small" @click="showDetail(scope.row)">
           详情
