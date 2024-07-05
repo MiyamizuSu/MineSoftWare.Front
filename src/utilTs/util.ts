@@ -23,10 +23,24 @@ export interface Conference {
     imgUrl: string,
     belongedCompany: string
 }
+export interface Department {
+    departmentId: number,
+    departmentName: string,
+    departmentPerson: string,
+    personTel: string,
+    departmentState: string,
+    upper: string
+    createTime: string,
+}
+export interface Company {
+    companyName: string
+}
+
 export const PathNameTable= {
     "/mainView":"主页",
     "/mainView/conferenceManagement":"会议管理",
-    "/mainView/courseManagement":"课程管理"
+    "/mainView/courseManagement":"课程管理",
+    "/mainView/departmentManagement":"组织管理"
 }
 
 const requestHeader={

@@ -225,7 +225,10 @@ computed:{
 
       }
       else if (index === "2") {
-
+        router.push("/mainView/departmentManagement")
+        this.pathList.splice(0,this.pathList.length);
+        this.pathList.push("/mainView")
+        this.pathList.push("/mainView/departmentManagement")
       }
       else if (index === "3") {
 
