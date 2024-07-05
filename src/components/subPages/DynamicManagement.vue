@@ -73,7 +73,11 @@
            @selection-change="handleSelectionChange">
 
          <el-table-column type="selection" width="55" />
-    <el-table-column fixed prop="dynamicTitle" label="新闻标题" width="350" />
+    <el-table-column fixed prop="dynamicTitle" label="新闻标题" width="350">
+         <template #default="scope">
+           <a @click="showDetail(scope.row)">{{ scope.row.dynamicTitle }}</a>
+         </template>
+    </el-table-column>
     <el-table-column prop="dynamicAuthor" label="作者" width="320" />
     <el-table-column prop="dynamicIntro" label="新闻简介" width="320" />
     <el-table-column fixed="right" label="Operations" min-width="200">
@@ -81,8 +85,8 @@
         <el-button link type="primary" size="small" @click="showDetail(scope.row)">
           详情
         </el-button>
-        <el-button link type="primary" size="small" @click="showEditForm(scope.row)">编辑</el-button>
-        <el-button link type="primary" size="small" @click="openDelteConfirm(scope.row)">删除</el-button>
+        <el-button link type="primary" size="small" @click="showEditForm(scope.row)"> <el-icon> <Edit /> </el-icon>编辑</el-button>
+        <el-button link type="primary" size="small" @click="openDelteConfirm(scope.row)"> <el-icon> <Delete /> </el-icon> 删除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -140,6 +144,19 @@
               </template>
               {{ currentDetail.dynamicAuthor }}
             </el-descriptions-item>
+
+            <el-descriptions-item>
+              <template #label>
+                <div class="cell-item">
+                  <el-icon>
+                    <Notebook/>
+                  </el-icon>
+                  新闻简介
+                </div>
+              </template>
+              {{ currentDetail.dynamicIntro }}
+            </el-descriptions-item>
+            
             <el-descriptions-item>
               <template #label>
                 <div class="cell-item">
@@ -295,7 +312,7 @@
         </el-form>
 
         <template #footer>
-          <div class="dialog-footer">
+          <div class="dialog-footer" >
             <el-button type="primary" @click="editConfirmDialogVisible=true">
               修改
             </el-button>
@@ -692,6 +709,7 @@ export default {
         if (res.data.status === "200"){
           ElMessage({
             type: 'success',
+            grouping: true,
             message: '删除成功',
           })
           this.reloadData();
