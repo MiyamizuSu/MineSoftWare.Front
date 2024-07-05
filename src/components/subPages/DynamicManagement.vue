@@ -78,7 +78,7 @@
            <a @click="showDetail(scope.row)">{{ scope.row.dynamicTitle }}</a>
          </template>
     </el-table-column>
-    <el-table-column prop="dynamicAuthor" label="作者" width="400" />
+    <el-table-column prop="dynamicAuthor" label="作者" width="400"/>
     <el-table-column prop="dynamicIntro" label="新闻简介" width="400"/>
     <el-table-column fixed="right" label="Operations" width="200">
       <template #default="scope">
