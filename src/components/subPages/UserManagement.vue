@@ -462,7 +462,7 @@ const rules = ref({
 });
 </script>
 
-<style lang='scss' scoped>
+<style lang='css' scoped>
 .app-container {
     padding: 20px;
     background-color: #fff;
