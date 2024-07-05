@@ -295,7 +295,7 @@
         </el-form>
 
         <template #footer>
-          <div class="dialog-footer">
+          <div class="dialog-footer" >
             <el-button type="primary" @click="editConfirmDialogVisible=true">
               修改
             </el-button>
