@@ -11,6 +11,17 @@ export interface USERDATA{
     belongDept: string,
     startTime: string,
 }
+export interface Course{
+    courseMediaUrl:string,
+    courseIntroduction:string,
+    courseCompare:string,
+    courseName:string,
+    status:string,
+    author:string,
+    courseCode:string,
+    imgUrl:string,
+}
+
 
 export interface Conference {
     conferenceId: number,
@@ -123,3 +134,6 @@ export const getSignatrue= (): Promise<string> =>{
         return error;
     })
 }
+export const momoSearch = (before: Course[],query:string) : Course[] => {
+    return before.filter(course => course.courseName.includes(query));
+};
