@@ -24,6 +24,27 @@ export interface Conference {
     belongedCompany: string
 }
 
+export interface UserDate{
+    userName: string,
+    userRealName: string,
+    userPhoneNumber: string,
+    userEmail: string,
+    imgUrl: string,
+    userType: number,
+    belongCompany: string,
+    belongDept: string,
+    startTime: string,
+    userPassword:string,
+}
+
+export interface TenantDate{
+    companyName: string,
+    imgUrl: string,
+    connectorName: string,
+    userName: string,
+    userPhoneNumber: string
+}
+
 export interface Dynamic {
     dynamicId: number,
     dynamicTitle: string,

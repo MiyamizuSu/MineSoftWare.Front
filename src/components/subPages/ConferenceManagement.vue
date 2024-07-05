@@ -26,6 +26,12 @@
   height: 178px;
   text-align: center;
 }
+/* 控制上传图片所展示的样式 */
+.upload-image {
+  max-width: 550px;
+  height: auto;
+  max-height: 450px;
+}
 </style>
 
 <template>
@@ -35,8 +41,6 @@
           <!-- 搜索框 -->
           <div style="margin-top: 0;">
             <label style="font-size: 14px; font-weight: bolder;">会议名称</label>
-<!--            <el-input placeholder="请输入会议名称"   type="text" v-model="search_conferenceName"-->
-<!--                      style="width: 160px; margin-left: 15px; margin-right: 60px; font-size: 14px;" clearable></el-input>-->
             <el-autocomplete
                 v-model="search_conferenceName"
                 :fetch-suggestions="searchConferenceName_suggestions"
@@ -80,7 +84,7 @@
             <el-button type="danger" plain icon="Delete"  @click="deleteSelectedConferences"  style="font-size: 13px; margin: 5px; width: 70px; text-align: center;">删除</el-button>
             <el-button type="warning" plain icon="Download"  @click="onBatchExport"  style="font-size: 13px; margin: 5px; width: 70px; text-align: center;">导出</el-button>
           </p>
-
+          <!-- 主要的表格部分 -->
           <el-table
               v-bind:data="showData"
               height="550px"
@@ -91,12 +95,6 @@
           >
             <el-table-column type="selection"  label="选择">
             </el-table-column>
-<!--            <el-table-column-->
-<!--                prop="conferenceId"-->
-<!--                label="会议编号"-->
-<!--                width="80"-->
-<!--                style="text-align: center;">-->
-<!--            </el-table-column>-->
             <el-table-column
                 prop="conferenceName"
                 label="会议名称"
@@ -172,23 +170,18 @@
                     :http-request="httpRequest"
                     :crossorigin="'use-credentials'"
                 >
-                  <img v-if="uploadUrl" :src="uploadUrl" class="avatar" style="width: 220px; max-height: 250px;">
+                  <img v-if="uploadUrl" :src="uploadUrl" class="avatar" style="max-width: 350px; max-height: 300px;">
                   <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
                 </el-upload>
               </el-form-item>
               <p style="color: red; margin-top: 0; margin-left: 120px;">请上传大小不超过5MB 格式为png/jpg/jpeg的文件</p>
-<!--              <el-form-item label="会议内容" prop="content" label-width="120px">-->
-<!--                <img src="../resource/rich_text_edit.png" style="width: 1153px; margin: 0; padding: 0;">-->
-<!--                <el-input type="textarea" v-model="add_conferenceForm.content" :autosize="{ minRows: 5, maxRows: 10}"-->
-<!--                          clearable  placeholder="请输入会议内容" style="margin-top: -15px; padding: 0; font-size: 15px;"></el-input>-->
-<!--              </el-form-item>-->
 
               <p style="width: 120px; font-size: 15px; font-weight: bolder;">会议内容：</p>
               <QuillEditor
                   theme="snow" v-model:content="add_conferenceForm.content"
                   :options="editorOptions2(this)"  contentType="html"
                   @update:content="setContentValue"
-                  style="margin-top: 5px; margin-bottom: 20px; height: 200px;"
+                  style="margin-top: 5px; margin-bottom: 20px; height: 300px;"
                   @focus="setFocusQuill"
                   @ready="onEditorReady2"
               />
@@ -216,8 +209,8 @@
                     style="width: 300px;">
                 </el-date-picker>
               </el-form-item>
-
             </el-form>
+
             <div slot="footer" class="dialog-footer" style="margin-top: 30px;">
               <el-button type="primary" @click="confirm_addConference" style="margin-left: 30%; margin-right: 20px;">确定</el-button>
               <el-button @click="cancel_addConference">取消</el-button>
@@ -238,7 +231,7 @@
                     :http-request="httpRequest"
                     :crossorigin="'use-credentials'"
                 >
-                  <img v-if="uploadUrl" :src="uploadUrl" class="avatar" style="width: 220px; max-height: 250px;">
+                  <img v-if="uploadUrl" :src="uploadUrl" class="avatar" style="max-width: 350px; max-height: 300px;">
                   <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
                 </el-upload>
               </el-form-item>
@@ -253,7 +246,7 @@
                   theme="snow" v-model:content="edit_conferenceForm.content"
                   :options="editorOptions1(this)"  contentType="html"
                   @update:content="setContentValue"
-                 style="margin-top: 5px; margin-bottom: 20px; height: 200px;"
+                 style="margin-top: 5px; margin-bottom: 20px; height: 300px;"
                   @focus="setFocusQuill"
                   @ready="onEditorReady1"
               />
@@ -302,12 +295,13 @@
               </p>
               <p style="margin-top: 40px; margin-bottom: 20px; margin-left: 20px;">
                 <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议封面：</label>
-                <img :src="selectedConference.imgUrl" alt="会议封面" style="height: 300px;  margin-left: 15px;" />
+                <img :src="selectedConference.imgUrl" alt="会议封面" style="height: 300px;  max-width: 500px; margin-left: 15px;" />
               </p>
               <p style="margin: 20px;">
                 <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议内容：</label>
 <!--                <p style="font-size: 17px; margin-left: 15px;">{{selectedConference.content}}</p>-->
-                <div style="font-size: 17px; margin-left: 15px;" v-html="selectedConference.content"></div>
+                <div style="font-size: 17px; margin-left: 15px; margin-right: 30px;"
+                     v-html="selectedConference.content"></div>
               </p>
               <p style="margin: 20px;">
                 <label style="font-size: 18px; font-weight: bolder; margin-right: 15px;">会议开始时间：</label>
@@ -328,9 +322,10 @@
             </div>
           </el-dialog>
 
-          <!-- 辅助使用自定义图片上传 -->
+          <!-- 辅助实现富文本编辑器自定义图片上传 -->
           <input type="file" id="uploadImageBtn" hidden accept='image/*'  @change="handleUploadImage" />
 
+          <!-- 分页栏 -->
           <el-pagination style="margin-left: 550px; margin-top: 50px;"
                      :current-page="currentPage"
                      :page-sizes="[5, 10, 15, 20]"
@@ -366,6 +361,7 @@ import { QuillEditor, Quill } from '@vueup/vue-quill'
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import '@vueup/vue-quill/dist/vue-quill.bubble.css';
 import * as events from "node:events";
+import Compressor from 'compressorjs';
 
 axios.defaults.withCredentials = true;
 const emitter = mitt()
@@ -374,17 +370,18 @@ export default {
   // components: { Editor, Toolbar},
   setup() {
     const nowIndex = ref("5");
-    const httpRequest =(options: UploadRequestOptions ) : void=>{
-      const fileTo=options.file
-      uploadFile(fileTo).then(res=>{
-        console.log(res.data.data.links.url)
-        emitter.emit('urlChange',res.data.data.links.url); //发出改变信号，即向图床上传图片获得的url
-      })
-    };
+    // const httpRequest = (options: UploadRequestOptions) => {
+    //   const fileTo = options.file
+    //   uploadFile(fileTo).then(res => {
+    //     console.log(res.data.data.links.url)
+    //     emitter.emit('urlChange', res.data.data.links.url); //发出改变信号，即向图床上传图片获得的url
+    //   })
+    // };
 
 
     return {
-      UserFilled, nowIndex, httpRequest,
+      UserFilled, nowIndex,
+      // httpRequest,
 
     }
   },
@@ -453,7 +450,7 @@ export default {
         imgUrl: "",
         belongedCompany: ""
       },
-      add_content_valueHTML: "",
+      // add_content_valueHTML: "",
       updateConference_dialogFormVisible: false,
       edit_conferenceForm: <Conference>{
         conferenceId: -1,
@@ -466,7 +463,7 @@ export default {
         imgUrl: "",
         belongedCompany: ""
       },
-      edit_content_valueHTML: "",
+      // edit_content_valueHTML: "",
       add_conferenceRules: {
         conferenceName: [
           {required: true, message: "请输入会议名称", trigger: "blur"}
@@ -488,15 +485,28 @@ export default {
         ],
       },
 
-      selectedQuill: <Quill>null,
-      quill1: <Quill>null,
-      quill2: <Quill>null,
+      selectedQuill: {} as Quill,
+      quill1: {} as Quill,
+      quill2: {} as Quill,
 
     }
   },
 
 
   methods: {
+    async httpRequest(options: UploadRequestOptions ) {
+      const fileTo=options.file
+      //这儿可以进行一下图片压缩操作，避免图片过大上传失败
+      const compressedBlob :Blob = await this.compressImage(fileTo); // 压缩图片
+      console.log("compressedBlob: ");
+      console.log(compressedBlob); //Blob类型，与需要的File类型不符
+      const compressedFile = await this.blobToFile(compressedBlob, fileTo.name);
+      uploadFile(compressedFile).then(res=>{
+        console.log(res.data.data.links.url)
+        //发出改变信号，即向图床上传图片获得的url
+        emitter.emit('urlChange',res.data.data.links.url);
+      })
+    },
     onEditorReady1(quillInstance:Quill) {
       this.quill1 = quillInstance;
       console.log("用于修改的编辑器已准备好");
@@ -515,29 +525,62 @@ export default {
       console.log("真正的Quill: ")
       console.log(this.selectedQuill);
     },
-    handleUploadImage(e: events) {
+    compressImage(file: File) { //压缩图片
+      return new Promise((resolve, reject) => {
+        new Compressor(file, {
+          quality: 0.75, // 设置压缩质量
+          maxWidth: 550, // 设置图片最大宽度
+          maxHeight: 450, // 设置图片最大高度
+          success(result) {
+            resolve(result);
+          },
+          error(error) {
+            reject(error);
+          },
+        });
+      });
+
+    },
+    blobToFile(blob: Blob, fileName: string) {
+      let file: File = new File([blob], fileName, {type: blob.type});
+      return file;
+    },
+    async handleUploadImage(e: events) {
       const files = Array.prototype.slice.call(e.target.files)
-      console.log("files: ", files)
-      if (!files) {
+      // console.log("files: ", files)
+      const file: File = files[0];
+      if (!file) {
         return
       }
-      uploadFile(files[0]).then(res => {
-        if (res.data.data.links.url) {
-          // const quill = toRaw(myQuillEditor.value).getQuill()
-          console.log(111)
-          console.log(this.selectedQuill);
-          console.log("quil1: ");
-          console.log(this.quill1)
-          console.log("quil2: ");
-          console.log(this.quill2)
+      const compressedBlob :Blob = await this.compressImage(file); // 压缩图片
+      console.log("compressedBlob: ");
+      console.log(compressedBlob); //Blob类型，与需要的File类型不符
+      const compressedFile = await this.blobToFile(compressedBlob, file.name);
+      uploadFile(compressedFile).then(res => {
+        console.log(res);
+        if (res.data) {
+          if (res.data.data.links.url) {
+            // const quill = toRaw(myQuillEditor.value).getQuill()
+            console.log(111)
+            console.log(this.selectedQuill);
+            // console.log("quil1: ");
+            // console.log(this.quill1)
+            // console.log("quil2: ");
+            // console.log(this.quill2)
 
-          const range = this.selectedQuill.getSelection();
-          this.selectedQuill.insertEmbed(<number>range?.index, 'image', res.data.data.links.url)
-          this.selectedQuill.setSelection(range?.index + 1)
-          // resolve(res.data.data.links.url);
-          console.log("富文本编辑器图片上传成功----")
-          console.log(res.data.data.links.url)
+            const range = this.selectedQuill.getSelection();
+            this.selectedQuill.insertEmbed(<number>range?.index, 'image', res.data.data.links.url)
+            const imgElement = this.selectedQuill.root.querySelector(`img[src="${res.data.data.links.url}"]`);
+            if (imgElement) {
+              imgElement.classList.add('upload-image'); //设置样式
+            }
+            this.selectedQuill.setSelection(range?.index + 1)
+            // resolve(res.data.data.links.url);
+            console.log("富文本编辑器图片上传成功----")
+            console.log(res.data.data.links.url)
+          }
         }
+
       })
     },
     imageHandler(quill: Quill) {
@@ -711,7 +754,11 @@ export default {
         //   height: 100,
         // }
       ];
-      const exportData = JSON.parse(JSON.stringify(this.tableData));
+      let excelData = this.tableData;
+      for (let conference of excelData) {
+        conference.content = this.getPlainTextFromHtml(conference.content);
+      }
+      const exportData = JSON.parse(JSON.stringify(excelData));
       table2excel(column, exportData, "会议列表");
     },
     handleSelectionChange(val: Conference[]) {
@@ -776,6 +823,12 @@ export default {
         if (res.data.statusCode == "200") {
           ElMessage({message: "添加成功！", type: "success"});
           this.loadConferences();
+          this.add_conferenceForm.conferenceName = "";
+          this.add_conferenceForm.creator = "";
+          this.add_conferenceForm.content = "";
+          this.add_conferenceForm.beginTime = "";
+          this.add_conferenceForm.endTime = "";
+
           this.addConference_dialogFormVisible = false;
         }
         else if (res.data.statusCode == "501") {
